@@ -4,7 +4,7 @@
  * Plugin URI: https://example.com
  * Description: Plugin WooCommerce cho phép cấu hình nhiều Product Option Groups (có giá cộng thêm) và Extra Info Groups (thông tin phụ không cộng tiền).
  * Version: 1.0.8
- * Author: Your Name
+ * Author: Kien Tran
  * Text Domain: woo-product-option-setup
  * Domain Path: /languages
  * Requires at least: 5.0
