@@ -240,7 +240,11 @@ function woo_product_option_save_meta_box($post_id) {
                     $custom_prices = array();
                     foreach ($option_ids as $option_id) {
                         if (isset($option_prices[$group_id][$option_id]) && !empty($option_prices[$group_id][$option_id])) {
-                            $custom_prices[$option_id] = sanitize_text_field($option_prices[$group_id][$option_id]);
+                            $price_value = floatval($option_prices[$group_id][$option_id]);
+                            // Validate price range
+                            if ($price_value >= 0 && $price_value <= WOO_PRODUCT_OPTION_SETUP_MAX_PRICE) {
+                                $custom_prices[$option_id] = $price_value;
+                            }
                         }
                     }
                     if (!empty($custom_prices)) {

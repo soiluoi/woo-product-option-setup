@@ -30,6 +30,9 @@ function woo_product_option_display_options() {
     $option_groups_data = get_post_meta($product_id, '_product_option_groups_data', true);
     if ($option_groups_data === false) {
         error_log('Woo Product Option Setup: Failed to get option groups data for product ID: ' . $product_id);
+        if (current_user_can('manage_options')) {
+            echo '<div class="woocommerce-error">' . __('Lỗi: Không thể tải dữ liệu tùy chọn sản phẩm. Vui lòng thử lại sau.', 'woo-product-option-setup') . '</div>';
+        }
         return;
     }
     
@@ -41,11 +44,18 @@ function woo_product_option_display_options() {
         return;
     }
     
-    // Lấy dữ liệu từ settings với error handling
-    $option_groups = get_option('woo_product_option_groups', array());
+    // Lấy dữ liệu từ settings với caching
+    $cache_key = 'woo_product_option_groups';
+    $option_groups = wp_cache_get($cache_key, 'woo_product_options');
+    
     if ($option_groups === false) {
-        error_log('Woo Product Option Setup: Failed to get option groups from settings');
-        return;
+        $option_groups = get_option('woo_product_option_groups', array());
+        if ($option_groups === false) {
+            error_log('Woo Product Option Setup: Failed to get option groups from settings');
+            return;
+        }
+        // Cache trong 1 giờ
+        wp_cache_set($cache_key, $option_groups, 'woo_product_options', 3600);
     }
     
     ?>
@@ -122,7 +132,7 @@ function woo_product_option_display_options() {
                 <div class="price-summary">
                     <div class="original-price">
                         <span class="label"><?php _e('Giá gốc:', 'woo-product-option-setup'); ?></span>
-                        <span class="price" id="original-price" data-price="<?php echo esc_attr($product->get_price()); ?>"><?php echo number_format($product->get_price() / 1000, 0) . 'k'; ?></span>
+                        <span class="price" id="original-price" data-price="<?php echo esc_attr($product->get_price()); ?>"><?php echo esc_html(number_format($product->get_price() / 1000, 0) . 'k'); ?></span>
                     </div>
                     <div class="additional-price" id="additional-price" style="display:none;">
                         <span class="label"><?php _e('Phụ phí:', 'woo-product-option-setup'); ?></span>
@@ -130,7 +140,7 @@ function woo_product_option_display_options() {
                     </div>
                     <div class="total-price">
                         <span class="label"><?php _e('Tổng cộng:', 'woo-product-option-setup'); ?></span>
-                        <span class="price" id="total-price" data-price="<?php echo esc_attr($product->get_price()); ?>"><?php echo number_format($product->get_price() / 1000, 0) . 'k'; ?></span>
+                        <span class="price" id="total-price" data-price="<?php echo esc_attr($product->get_price()); ?>"><?php echo esc_html(number_format($product->get_price() / 1000, 0) . 'k'); ?></span>
                     </div>
                 </div>
             </div>

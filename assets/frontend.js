@@ -12,9 +12,14 @@ jQuery(document).ready(function($) {
      * Khởi tạo tính giá
      */
     function initPriceCalculation() {
-        // Lắng nghe sự kiện thay đổi options
+        var calculationTimeout;
+        
+        // Lắng nghe sự kiện thay đổi options với debounce
         $('.woo-product-options-container').on('change', 'input[type="radio"], input[type="checkbox"]', function() {
-            calculateTotalPrice();
+            clearTimeout(calculationTimeout);
+            calculationTimeout = setTimeout(function() {
+                calculateTotalPrice();
+            }, 100); // Debounce 100ms
         });
         
         // Tính giá ban đầu
@@ -25,8 +30,15 @@ jQuery(document).ready(function($) {
      * Tính tổng giá
      */
     function calculateTotalPrice() {
-        var originalPrice = parseFloat($('#original-price').data('price')) || 0;
-        var additionalPrice = 0;
+        try {
+            var originalPrice = parseFloat($('#original-price').data('price')) || 0;
+            var additionalPrice = 0;
+            
+            // Validate original price
+            if (isNaN(originalPrice) || originalPrice < 0) {
+                console.error('Invalid original price:', originalPrice);
+                originalPrice = 0;
+            }
         
         // Tính giá từ radio groups (chỉ lấy 1 option được chọn)
         $('.option-group[data-group-type="radio"]').each(function() {
@@ -52,6 +64,15 @@ jQuery(document).ready(function($) {
         
         // Cập nhật hiển thị
         updatePriceDisplay(originalPrice, additionalPrice);
+        
+        } catch (error) {
+            console.error('Error calculating total price:', error);
+            // Fallback: hiển thị giá gốc
+            var $totalPrice = $('#total-price');
+            if ($totalPrice.length) {
+                $totalPrice.text($('#original-price').text());
+            }
+        }
     }
     
     /**

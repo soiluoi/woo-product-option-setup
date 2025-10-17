@@ -12,6 +12,11 @@ if (!defined('ABSPATH')) {
  * Hiển thị trang settings
  */
 function woo_product_option_settings_page() {
+    // Kiểm tra quyền truy cập
+    if (!current_user_can('manage_options')) {
+        wp_die(__('Bạn không có quyền truy cập trang này.', 'woo-product-option-setup'));
+    }
+    
     // Xử lý form submit
     if (isset($_POST['submit']) && wp_verify_nonce($_POST['woo_product_option_nonce'], 'woo_product_option_settings')) {
         woo_product_option_save_settings();
@@ -238,6 +243,11 @@ function woo_product_option_render_extra_info($info, $index) {
  * Lưu settings
  */
 function woo_product_option_save_settings() {
+    // Kiểm tra quyền truy cập
+    if (!current_user_can('manage_options')) {
+        wp_die(__('Bạn không có quyền thực hiện hành động này.', 'woo-product-option-setup'));
+    }
+    
     // Xử lý Product Option Groups
     if (isset($_POST['option_groups'])) {
         $option_groups = array();
@@ -250,10 +260,15 @@ function woo_product_option_save_settings() {
                     foreach ($group['options'] as $option) {
                         if (!empty($option['name'])) {
                             $option_id = 'opt_' . uniqid();
+                            $price = floatval($option['price']);
+                            // Validate price range
+                            if ($price < 0 || $price > WOO_PRODUCT_OPTION_SETUP_MAX_PRICE) {
+                                $price = 0;
+                            }
                             $options[] = array(
                                 'id' => $option_id,
                                 'name' => sanitize_text_field($option['name']),
-                                'price' => intval($option['price']) // Giữ nguyên giá trị từ input
+                                'price' => intval($price)
                             );
                         }
                     }
@@ -269,6 +284,8 @@ function woo_product_option_save_settings() {
         }
         
         update_option('woo_product_option_groups', $option_groups);
+        // Clear cache
+        wp_cache_delete('woo_product_option_groups', 'woo_product_options');
     }
     
     // Xử lý Extra Info Groups
@@ -291,6 +308,8 @@ function woo_product_option_save_settings() {
         }
         
         update_option('woo_extra_info_groups', $extra_info_groups);
+        // Clear cache
+        wp_cache_delete('woo_extra_info_groups', 'woo_product_options');
     }
     
     add_action('admin_notices', function() {

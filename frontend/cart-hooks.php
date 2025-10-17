@@ -13,6 +13,14 @@ if (!defined('ABSPATH')) {
  */
 add_filter('woocommerce_add_cart_item_data', 'woo_product_option_add_cart_item_data', 10, 3);
 
+/**
+ * Thêm dữ liệu options vào cart item data
+ *
+ * @param array $cart_item_data Dữ liệu cart item hiện tại
+ * @param int $product_id ID sản phẩm
+ * @param int $variation_id ID biến thể sản phẩm
+ * @return array Dữ liệu cart item đã được cập nhật
+ */
 function woo_product_option_add_cart_item_data($cart_item_data, $product_id, $variation_id) {
     // Kiểm tra có options không
     if (!isset($_POST['product_options'])) {
@@ -23,6 +31,7 @@ function woo_product_option_add_cart_item_data($cart_item_data, $product_id, $va
     $option_groups_data = get_post_meta($product_id, '_product_option_groups_data', true);
     if ($option_groups_data === false) {
         error_log('Woo Product Option Setup: Failed to get option groups data for product ID: ' . $product_id);
+        wc_add_notice(__('Lỗi: Không thể tải tùy chọn sản phẩm. Vui lòng thử lại.', 'woo-product-option-setup'), 'error');
         return $cart_item_data;
     }
     
@@ -82,13 +91,16 @@ function woo_product_option_add_cart_item_data($cart_item_data, $product_id, $va
                         
                         $final_price = $custom_price ?: $option['price'];
                         
-                        // Validate price
-                        if (!is_numeric($final_price) || $final_price < 0) {
+                        // Validate price - kiểm tra kỹ hơn
+                        if (!is_numeric($final_price) || $final_price < 0 || $final_price > WOO_PRODUCT_OPTION_SETUP_MAX_PRICE) {
                             error_log('Woo Product Option Setup: Invalid price for option: ' . $option['name'] . ', price: ' . $final_price);
                             $final_price = 0;
                         }
                         
-                        $price_in_cents = intval($final_price * 1000); // Nhân 1000 để chuyển từ k sang đơn vị nhỏ nhất
+                        // Đảm bảo giá là số nguyên
+                        $final_price = intval($final_price);
+                        
+                        $price_in_cents = intval($final_price * WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER);
                         
                         $group_options[] = array(
                             'id' => $option['id'],
@@ -127,6 +139,12 @@ function woo_product_option_add_cart_item_data($cart_item_data, $product_id, $va
  */
 add_action('woocommerce_before_calculate_totals', 'woo_product_option_calculate_totals', 10, 1);
 
+/**
+ * Tính tổng giá sản phẩm bao gồm options
+ *
+ * @param WC_Cart $cart Đối tượng giỏ hàng WooCommerce
+ * @return void
+ */
 function woo_product_option_calculate_totals($cart) {
     if (is_admin() && !defined('DOING_AJAX')) {
         return;

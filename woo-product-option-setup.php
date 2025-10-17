@@ -36,9 +36,11 @@ function woo_product_option_setup_woocommerce_notice() {
 }
 
 // Định nghĩa constants
-define('WOO_PRODUCT_OPTION_SETUP_VERSION', '1.0.7');
+define('WOO_PRODUCT_OPTION_SETUP_VERSION', '1.0.8');
 define('WOO_PRODUCT_OPTION_SETUP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER', 1000); // Chuyển đổi từ k sang đơn vị nhỏ nhất
+define('WOO_PRODUCT_OPTION_SETUP_MAX_PRICE', 999999); // Giá tối đa cho phép
 
 /**
  * Class chính của plugin
