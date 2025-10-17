@@ -1,0 +1,541 @@
+/**
+ * CSS cho Admin - Product Option Setup
+ */
+
+/* Settings Page Styles */
+.woo-product-option-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.woo-product-option-section h2 {
+    margin-top: 0;
+    color: #23282d;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 10px;
+}
+
+.woo-product-option-section .description {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+/* Option Groups */
+.option-group-item {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.group-header {
+    background: #f1f1f1;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.group-header h3 {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.group-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.remove-group {
+    background: #dc3232;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.remove-group:hover {
+    background: #a00;
+}
+
+.group-content {
+    padding: 15px;
+}
+
+.group-content .form-table {
+    margin-bottom: 0;
+}
+
+.group-content .form-table th {
+    width: 150px;
+    padding: 10px 0;
+}
+
+.group-content .form-table td {
+    padding: 10px 0;
+}
+
+/* Options Container */
+.options-container {
+    margin-top: 10px;
+}
+
+
+
+
+.remove-option {
+    background: #dc3232;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-option:hover {
+    background: #a00;
+}
+
+.add-option {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.add-option:hover {
+    background: #005a87;
+}
+
+.no-options {
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+}
+
+/* Extra Info Groups */
+
+.info-header {
+    background: #f1f1f1;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.info-header h4 {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+.info-content {
+    padding: 15px;
+}
+
+.info-content .form-table {
+    margin-bottom: 0;
+}
+
+.info-content .form-table th {
+    width: 150px;
+    padding: 10px 0;
+}
+
+.info-content .form-table td {
+    padding: 10px 0;
+}
+
+.step-row {
+    transition: all 0.3s ease;
+}
+
+/* Add Group Buttons */
+#add-option-group,
+#add-extra-info-group {
+    background: #00a32a;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#add-option-group:hover,
+#add-extra-info-group:hover {
+    background: #008a20;
+}
+
+.no-groups {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+}
+
+/* Meta Box Styles */
+.woo-product-option-meta-box {
+    padding: 0;
+}
+
+.options-section,
+.extra-info-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.options-section h3,
+.extra-info-section h3 {
+    margin-top: 0;
+    color: #23282d;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.option-group-meta {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.option-group-meta h4 {
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.group-type {
+    color: #666;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.group-options {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.group-options p {
+    margin: 5px 0;
+}
+
+.group-options label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+
+.no-options {
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+}
+
+
+/* Toggle Effects */
+.options-content,
+.extra-info-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.options-content.hidden,
+.extra-info-content.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.group-options.hidden {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .group-header h3,
+    .info-header h4 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .remove-group {
+        align-self: flex-end;
+    }
+}
+
+/* Animation for adding/removing items */
+.option-group-item {
+    transition: all 0.3s ease;
+}
+
+.option-group-item.removing {
+    opacity: 0;
+    transform: translateX(-20px);
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Meta Box Layout Styles */
+.woo-product-option-meta-box {
+    padding: 0;
+}
+
+.woo-product-option-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.woo-product-option-section h2 {
+    margin: 0 0 15px 0;
+    padding: 0 0 10px 0;
+    border-bottom: 2px solid #0073aa;
+    color: #0073aa;
+    font-size: 18px;
+}
+
+.woo-product-option-section h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.woo-product-option-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Option Group Styles */
+.option-group-item {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+
+.group-header {
+    padding: 15px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+}
+
+.group-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.group-header label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.group-title {
+    margin-left: 8px;
+    color: #333;
+}
+
+.group-type {
+    margin-left: 8px;
+    color: #666;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.group-content {
+    padding: 15px;
+    background: #fff;
+}
+
+/* Option Item Styles */
+
+/* Extra Info Styles */
+
+.info-default {
+    color: #666;
+    font-size: 11px;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* Extra Info List Styles - Similar to Product Options */
+.extra-info-list {
+    margin-top: 10px;
+}
+
+/* ========================================
+   UNIFIED LAYOUT FOR ALL ITEMS
+   ======================================== */
+
+/* Option item container - Flexbox container */
+.option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    min-height: 32px;
+}
+
+/* Checkbox + label layout */
+.option-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+.option-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.option-name {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 0;
+}
+
+.option-name:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+/* Input styling */
+.option-price,
+.option-price-input {
+    width: 80px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.option-price:focus,
+.option-price-input:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.price-unit {
+    color: #666;
+    font-weight: 500;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Remove button */
+.remove-option {
+    background: #dc3232;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+}
+
+.remove-option:hover {
+    background: #a00;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .option-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .option-checkbox {
+        flex: none;
+    }
+    
+    .option-name,
+    .option-price,
+    .option-price-input {
+        width: 100%;
+    }
+}
+
+/* Collapsed groups */
+.option-group-item.collapsed .group-content {
+    display: none;
+}
+
