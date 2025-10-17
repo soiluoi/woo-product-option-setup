@@ -116,6 +116,10 @@ class Woo_Product_Option_Setup {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
+        // AJAX hooks
+        add_action('wp_ajax_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
+        add_action('wp_ajax_nopriv_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
+        
         // Admin hooks
         if (is_admin()) {
             add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -213,6 +217,62 @@ class Woo_Product_Option_Setup {
         
         if (!get_option('woo_extra_info_groups')) {
             update_option('woo_extra_info_groups', array());
+        }
+    }
+    
+    /**
+     * AJAX handler cho Add to Cart với options
+     */
+    public function ajax_add_to_cart_with_options() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'woo_product_option_nonce')) {
+            wp_die('Security check failed');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $quantity = intval($_POST['quantity']) ?: 1;
+        $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+        
+        // Validate product
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_send_json_error('Invalid product');
+        }
+        
+        // Prepare cart item data
+        $cart_item_data = array();
+        
+        // Add product options if provided
+        if (isset($_POST['product_options']) && !empty($_POST['product_options'])) {
+            $cart_item_data['woo_product_options'] = $_POST['product_options'];
+        }
+        
+        // Add to cart
+        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
+        
+        if ($cart_item_key) {
+            // Get updated cart fragments
+            ob_start();
+            woocommerce_mini_cart();
+            $mini_cart = ob_get_clean();
+            
+            $fragments = array(
+                'div.widget_shopping_cart_content' => '<div class="widget_shopping_cart_content">' . $mini_cart . '</div>',
+                'span.cart-contents-count' => '<span class="cart-contents-count">' . WC()->cart->get_cart_contents_count() . '</span>'
+            );
+            
+            // Add cart total
+            $fragments['span.cart-total'] = '<span class="cart-total">' . WC()->cart->get_cart_total() . '</span>';
+            
+            wp_send_json_success(array(
+                'message' => __('Sản phẩm đã được thêm vào giỏ hàng!', 'woo-product-option-setup'),
+                'cart_item_key' => $cart_item_key,
+                'fragments' => $fragments,
+                'cart_hash' => WC()->cart->get_cart_hash(),
+                'cart_count' => WC()->cart->get_cart_contents_count()
+            ));
+        } else {
+            wp_send_json_error('Failed to add to cart');
         }
     }
     

@@ -115,7 +115,7 @@ function woo_product_option_display_options() {
                                                id="<?php echo esc_attr($option_id); ?>" 
                                                name="product_options[<?php echo esc_attr($group['id']); ?>]<?php echo $group['type'] === 'checkbox' ? '[]' : ''; ?>" 
                                                value="<?php echo esc_attr($option['id']); ?>" 
-                                               data-price="<?php echo esc_attr($final_price); ?>"
+                                               data-price="<?php echo esc_attr(intval($final_price) * WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER); ?>"
                                                <?php echo $is_first ? 'checked' : ''; ?>>
                                         
                                         <span class="option-name"><?php echo esc_html($option['name']); ?></span>
@@ -345,6 +345,71 @@ function woo_product_option_frontend_styles() {
             min-width: auto;
             margin-bottom: 5px;
         }
+    }
+    
+    /* Loading states */
+    .woo-product-option-loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .woo-product-option-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #0073aa;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Message styles */
+    .woo-product-option-message {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 3px;
+        font-weight: 500;
+    }
+    
+    .woo-product-option-message.woocommerce-message {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .woo-product-option-message.woocommerce-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* Button loading state */
+    .single_add_to_cart_button.loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .single_add_to_cart_button.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border: 2px solid #ffffff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
     }
     </style>
     <?php
