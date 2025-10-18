@@ -374,14 +374,14 @@ function woo_product_option_frontend_styles() {
         width: 30px;
         height: 30px;
         /* Không background, loại bỏ border-radius cũ */
-        background-image: url(../../assets/images/full-leaf.svg);
+        background-image: url('<?php echo plugins_url( 'assets/full-leaf.svg', dirname(__FILE__) ); ?>');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
         padding: 0;
     }
     .woo-extra-info-display .half {
-        background-image: url(../../assets/images/half-leaf.svg);
+        background-image: url('<?php echo plugins_url( 'assets/half-leaf.svg', dirname(__FILE__) ); ?>');
     }
     
     @media (max-width: 768px) {
