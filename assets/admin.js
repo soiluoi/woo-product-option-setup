@@ -34,10 +34,11 @@ jQuery(document).ready(function($) {
             removeOptionGroup($(this));
         });
         
-        // Thêm option mới
+        // Thêm option mới (xác định đúng group qua phần tử button vừa click)
         $(document).on('click', '.add-option', function() {
-            var groupIndex = $(this).data('group-index');
-            addNewOption(groupIndex);
+            var $group = $(this).closest('.option-group-item');
+            var groupIndex = $group.attr('data-index');
+            addNewOption($group, parseInt(groupIndex, 10));
         });
         
         // Xóa option
@@ -60,20 +61,36 @@ jQuery(document).ready(function($) {
      * Khởi tạo quản lý Extra Info Groups
      */
     function initExtraInfoGroups() {
-        var infoIndex = $('.extra-info-item').length;
+        // Tính chỉ số kế tiếp dựa trên data-index hiện có
+        function getNextInfoIndex() {
+            var maxIndex = -1;
+            $('#extra-info-groups-container .option-item').each(function() {
+                var idx = parseInt($(this).attr('data-index'), 10);
+                if (!isNaN(idx) && idx > maxIndex) {
+                    maxIndex = idx;
+                }
+            });
+            return maxIndex + 1;
+        }
+
+        var infoIndex = getNextInfoIndex();
         
         // Thêm Extra Info mới
         $('#add-extra-info-group').on('click', function() {
             addNewExtraInfo(infoIndex++);
         });
         
-        // Xóa Extra Info
+        // Xóa Extra Info dựa trên markup hiện tại (.remove-option trong container Extra Info)
+        $(document).on('click', '#extra-info-groups-container .remove-option', function() {
+            removeExtraInfo($(this));
+        });
+        // Tương thích nếu có class cũ
         $(document).on('click', '.remove-extra-info', function() {
             removeExtraInfo($(this));
         });
         
-        // Cập nhật tên Extra Info
-        $(document).on('input', '.info-name-input', function() {
+        // Cập nhật tiêu đề Extra Info (markup hiện tại dùng .option-name)
+        $(document).on('input', '#extra-info-groups-container .option-name', function() {
             updateInfoTitle($(this));
         });
         
@@ -162,8 +179,7 @@ jQuery(document).ready(function($) {
     /**
      * Thêm option mới
      */
-    function addNewOption(groupIndex) {
-        var $group = $('.option-group-item').eq(groupIndex);
+    function addNewOption($group, groupIndex) {
         var $container = $group.find('.options-container');
         var optionIndex = $container.find('.option-item').length;
         
@@ -205,12 +221,10 @@ jQuery(document).ready(function($) {
      */
     function getOptionTemplate(groupIndex, optionIndex) {
         return '<div class="option-item" data-option-index="' + optionIndex + '">' +
-            '<div class="option-row">' +
-                '<input type="text" name="option_groups[' + groupIndex + '][options][' + optionIndex + '][name]" placeholder="Tên tùy chọn" class="option-name" required>' +
-                '<input type="number" name="option_groups[' + groupIndex + '][options][' + optionIndex + '][price]" placeholder="Giá cộng thêm (k)" class="option-price" min="0" step="1">' +
-                '<span class="price-unit">k</span>' +
-                '<button type="button" class="button button-small remove-option">Xóa</button>' +
-            '</div>' +
+            '<input type="text" name="option_groups[' + groupIndex + '][options][' + optionIndex + '][name]" placeholder="Tên tùy chọn" class="option-name" required>' +
+            '<input type="number" name="option_groups[' + groupIndex + '][options][' + optionIndex + '][price]" placeholder="Giá cộng thêm (k)" class="option-price" min="0" step="1">' +
+            '<span class="price-unit">k</span>' +
+            '<button type="button" class="button button-small remove-option">Xóa</button>' +
         '</div>';
     }
     
@@ -227,8 +241,8 @@ jQuery(document).ready(function($) {
         // Ẩn thông báo "no groups" nếu có
         $('.no-groups').hide();
         
-        // Focus vào input tên
-        $newInfo.find('.info-name-input').focus();
+        // Focus vào input tên (markup hiện tại dùng .option-name)
+        $newInfo.find('.option-name').focus();
         
         // Animation
         $newInfo.hide().slideDown(300);
@@ -242,14 +256,14 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        var $info = $button.closest('.extra-info-item');
+        var $info = $button.closest('.option-item');
         
         $info.addClass('removing');
         setTimeout(function() {
             $info.remove();
             
             // Hiển thị thông báo "no groups" nếu không còn Extra Info nào
-            if ($('.extra-info-item').length === 0) {
+            if ($('#extra-info-groups-container .option-item').length === 0) {
                 $('.no-groups').show();
             }
         }, 300);
