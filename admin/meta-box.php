@@ -25,12 +25,37 @@ function woo_product_option_add_meta_boxes() {
 }
 
 /**
+ * Helper function: Kiểm tra sản phẩm có phải matcha không
+ */
+function woo_is_matcha_product($product_id) {
+    $terms = get_the_terms($product_id, 'product_cat');
+    if ($terms && !is_wp_error($terms)) {
+        foreach ($terms as $term) {
+            if (stripos($term->name, 'matcha') !== false) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
  * Callback hiển thị meta box
  */
 function woo_product_option_meta_box_callback($post) {
     // Lấy dữ liệu hiện tại
     $option_groups_data = get_post_meta($post->ID, '_product_option_groups_data', true);
     $extra_info_enabled = get_post_meta($post->ID, '_extra_info_enabled', true);
+    
+    // Lấy dữ liệu Matcha Gram
+    $matcha_gram_enabled = get_post_meta($post->ID, '_matcha_gram_enabled', true);
+    $matcha_price_per_gram = get_post_meta($post->ID, '_matcha_price_per_gram', true);
+    
+    // Tự động tick nếu là sản phẩm matcha và chưa có setting
+    $is_matcha = woo_is_matcha_product($post->ID);
+    if ($is_matcha && empty($matcha_gram_enabled)) {
+        $matcha_gram_enabled = 'yes';
+    }
     
     // Lấy danh sách từ settings
     $option_groups = get_option('woo_product_option_groups', array());
@@ -127,6 +152,47 @@ function woo_product_option_meta_box_callback($post) {
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <!-- Matcha Gram Options Section -->
+        <div class="woo-product-option-section">
+            <h2><?php _e('Matcha Gram Options', 'woo-product-option-setup'); ?></h2>
+            
+            <p>
+                <label>
+                    <input type="checkbox" 
+                           name="matcha_gram_enabled" 
+                           value="yes" 
+                           <?php checked($matcha_gram_enabled, 'yes'); ?>>
+                    <?php _e('Enable Matcha Gram Addition', 'woo-product-option-setup'); ?>
+                    <?php if ($is_matcha): ?>
+                        <span style="color: #0073aa;"><?php _e('(Tự động phát hiện sản phẩm matcha)', 'woo-product-option-setup'); ?></span>
+                    <?php endif; ?>
+                </label>
+            </p>
+            
+            <div class="matcha-gram-content" <?php echo $matcha_gram_enabled !== 'yes' ? 'style="display:none;"' : ''; ?>>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">
+                            <label for="matcha_price_per_gram"><?php _e('Giá mỗi gram thêm (k)', 'woo-product-option-setup'); ?></label>
+                        </th>
+                        <td>
+                            <input type="number" 
+                                   id="matcha_price_per_gram" 
+                                   name="matcha_price_per_gram" 
+                                   value="<?php echo esc_attr($matcha_price_per_gram); ?>" 
+                                   placeholder="0" 
+                                   min="0" 
+                                   step="0.5" 
+                                   class="regular-text">
+                            <p class="description"><?php _e('Giá cộng thêm cho mỗi gram matcha (đơn vị: k = 1000đ)', 'woo-product-option-setup'); ?></p>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
         
@@ -256,6 +322,18 @@ function woo_product_option_save_meta_box($post_id) {
     }
     
     update_post_meta($post_id, '_product_option_groups_data', $option_groups_data);
+    
+    // Xử lý Matcha Gram Options
+    $matcha_gram_enabled = isset($_POST['matcha_gram_enabled']) && $_POST['matcha_gram_enabled'] === 'yes';
+    $matcha_price_per_gram = isset($_POST['matcha_price_per_gram']) ? floatval($_POST['matcha_price_per_gram']) : 0;
+    
+    // Validate giá
+    if ($matcha_price_per_gram < 0 || $matcha_price_per_gram > WOO_PRODUCT_OPTION_SETUP_MAX_PRICE) {
+        $matcha_price_per_gram = 0;
+    }
+    
+    update_post_meta($post_id, '_matcha_gram_enabled', $matcha_gram_enabled ? 'yes' : 'no');
+    update_post_meta($post_id, '_matcha_price_per_gram', $matcha_price_per_gram);
     
     // Xử lý Extra Info
     $extra_info_enabled = isset($_POST['extra_info_enabled']) && $_POST['extra_info_enabled'] === 'yes';

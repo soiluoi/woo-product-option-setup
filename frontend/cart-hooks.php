@@ -124,10 +124,40 @@ function woo_product_option_add_cart_item_data($cart_item_data, $product_id, $va
         }
     }
     
+    // Xử lý Matcha Gram Addition
+    if (isset($_POST['matcha_extra_gram']) && !empty($_POST['matcha_extra_gram'])) {
+        $extra_gram = intval($_POST['matcha_extra_gram']);
+        
+        // Validate gram (1-5)
+        if ($extra_gram >= 1 && $extra_gram <= 5) {
+            $matcha_gram_enabled = get_post_meta($product_id, '_matcha_gram_enabled', true);
+            $matcha_price_per_gram = get_post_meta($product_id, '_matcha_price_per_gram', true);
+            
+            if ($matcha_gram_enabled === 'yes' && $matcha_price_per_gram > 0) {
+                // Validate price
+                $price_per_gram = floatval($matcha_price_per_gram);
+                if ($price_per_gram < 0 || $price_per_gram > WOO_PRODUCT_OPTION_SETUP_MAX_PRICE) {
+                    error_log('Woo Product Option Setup: Invalid matcha price per gram: ' . $price_per_gram);
+                    $price_per_gram = 0;
+                }
+                
+                if ($price_per_gram > 0) {
+                    $gram_price = intval($extra_gram * $price_per_gram * WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER);
+                    
+                    $cart_item_data['woo_matcha_extra_gram'] = $extra_gram;
+                    $cart_item_data['woo_matcha_gram_price'] = $gram_price;
+                    $additional_price += $gram_price;
+                }
+            }
+        }
+    }
     
     // Lưu vào cart item data
     if (!empty($selected_options)) {
         $cart_item_data['woo_product_options'] = $selected_options;
+        $cart_item_data['woo_additional_price'] = $additional_price;
+    } elseif (isset($cart_item_data['woo_matcha_gram_price']) && $cart_item_data['woo_matcha_gram_price'] > 0) {
+        // Chỉ có matcha gram, không có options
         $cart_item_data['woo_additional_price'] = $additional_price;
     }
     
@@ -180,6 +210,18 @@ function woo_product_option_display_item_data($item_data, $cart_item) {
         }
     }
     
+    // Hiển thị Matcha Gram
+    if (isset($cart_item['woo_matcha_extra_gram']) && $cart_item['woo_matcha_extra_gram'] > 0) {
+        $gram = $cart_item['woo_matcha_extra_gram'];
+        $price = isset($cart_item['woo_matcha_gram_price']) ? $cart_item['woo_matcha_gram_price'] : 0;
+        $price_text = $price > 0 ? ' (+' . ($price / 1000) . 'k)' : '';
+        
+        $item_data[] = array(
+            'key' => __('Thêm gram matcha', 'woo-product-option-setup'),
+            'value' => '+' . $gram . 'g' . $price_text
+        );
+    }
+    
     return $item_data;
 }
 
@@ -206,6 +248,18 @@ function woo_product_option_add_order_item_meta($item, $cart_item_key, $values, 
                 implode(', ', $options_text)
             );
         }
+    }
+    
+    // Lưu Matcha Gram
+    if (isset($values['woo_matcha_extra_gram']) && $values['woo_matcha_extra_gram'] > 0) {
+        $gram = $values['woo_matcha_extra_gram'];
+        $price = isset($values['woo_matcha_gram_price']) ? $values['woo_matcha_gram_price'] : 0;
+        $price_text = $price > 0 ? ' (+' . ($price / 1000) . 'k)' : '';
+        
+        $item->add_meta_data(
+            __('Thêm gram matcha', 'woo-product-option-setup'),
+            '+' . $gram . 'g' . $price_text
+        );
     }
     
     // Lưu additional price nếu có
@@ -238,6 +292,15 @@ function woo_product_option_add_order_item_meta_legacy($item_id, $values, $cart_
             
             wc_add_order_item_meta($item_id, $group['group_name'], implode(', ', $options_text));
         }
+    }
+    
+    // Lưu Matcha Gram
+    if (isset($values['woo_matcha_extra_gram']) && $values['woo_matcha_extra_gram'] > 0) {
+        $gram = $values['woo_matcha_extra_gram'];
+        $price = isset($values['woo_matcha_gram_price']) ? $values['woo_matcha_gram_price'] : 0;
+        $price_text = $price > 0 ? ' (+' . ($price / 1000) . 'k)' : '';
+        
+        wc_add_order_item_meta($item_id, __('Thêm gram matcha', 'woo-product-option-setup'), '+' . $gram . 'g' . $price_text);
     }
     
     // Lưu additional price nếu có

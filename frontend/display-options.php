@@ -58,6 +58,11 @@ function woo_product_option_display_options() {
         wp_cache_set($cache_key, $option_groups, 'woo_product_options', 3600);
     }
     
+    // Kiểm tra Matcha Gram có enabled không
+    $matcha_gram_enabled = get_post_meta($product_id, '_matcha_gram_enabled', true);
+    $matcha_price_per_gram = get_post_meta($product_id, '_matcha_price_per_gram', true);
+    $has_matcha_gram = ($matcha_gram_enabled === 'yes' && $matcha_price_per_gram > 0);
+    
     ?>
     
     <div class="woo-product-options-container">
@@ -128,6 +133,26 @@ function woo_product_option_display_options() {
                     </div>
                     
                 <?php endforeach; ?>
+                
+                <?php if ($has_matcha_gram): ?>
+                    <!-- Matcha Gram Addition Section -->
+                    <div class="matcha-gram-section">
+                        <h4 class="group-title"><?php _e('Thêm gram matcha', 'woo-product-option-setup'); ?></h4>
+                        
+                        <div class="matcha-gram-select-wrapper">
+                            <select id="matcha-extra-gram" name="matcha_extra_gram" class="matcha-gram-select" data-price-per-gram="<?php echo esc_attr(floatval($matcha_price_per_gram) * WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER); ?>">
+                                <option value="0"><?php _e('Không thêm', 'woo-product-option-setup'); ?></option>
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?php 
+                                    $gram_price = floatval($matcha_price_per_gram) * $i;
+                                    $price_display = $gram_price > 0 ? ' (+' . $gram_price . 'k)' : '';
+                                    ?>
+                                    <option value="<?php echo $i; ?>">+<?php echo $i; ?>g<?php echo $price_display; ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="price-summary">
                     <div class="original-price">
@@ -279,6 +304,41 @@ function woo_product_option_frontend_styles() {
         box-shadow: 0 0 0 1px #0073aa;
     }
     
+    /* CSS cho Matcha Gram Section */
+    .matcha-gram-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+    }
+    
+    .matcha-gram-select-wrapper {
+        margin-top: 10px;
+    }
+    
+    .matcha-gram-select {
+        width: 100%;
+        max-width: 300px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 14px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+    
+    .matcha-gram-select:hover {
+        border-color: #0073aa;
+    }
+    
+    .matcha-gram-select:focus {
+        border-color: #0073aa;
+        outline: none;
+        box-shadow: 0 0 0 1px #0073aa;
+    }
+    
     /* CSS cho shortcode extra info */
     .woo-extra-info-display {
         margin: 15px 0;
@@ -304,22 +364,24 @@ function woo_product_option_frontend_styles() {
         gap: 2px;
     }
     
-    .woo-extra-info-display .full {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        background-color: #0073aa;
-        border-radius: 2px;
-        margin-right: 2px;
-    }
-    
+    /* Hiển thị SVG icon thay cho block màu */
+
+    .woo-extra-info-display .full,
     .woo-extra-info-display .half {
         display: inline-block;
-        width: 10px;
-        height: 20px;
-        background-color: #0073aa;
-        border-radius: 2px;
+        vertical-align: middle;
         margin-right: 2px;
+        width: 30px;
+        height: 30px;
+        /* Không background, loại bỏ border-radius cũ */
+        background-image: url(../../assets/images/full-leaf.svg);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        padding: 0;
+    }
+    .woo-extra-info-display .half {
+        background-image: url(../../assets/images/half-leaf.svg);
     }
     
     @media (max-width: 768px) {

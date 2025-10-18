@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.9] - 2024-01-20
+
+### Added
+- Chức năng tăng gram matcha cho sản phẩm
+- Dropdown chọn thêm 1-5g matcha với giá tùy chỉnh theo từng sản phẩm
+- Tự động phát hiện sản phẩm matcha dựa trên category
+- Meta box "Matcha Gram Options" trong trang edit sản phẩm
+- Hiển thị dropdown trên trang sản phẩm với giá động
+- Lưu thông tin gram thêm vào giỏ hàng và đơn hàng
+- Tính giá tự động khi chọn gram thêm
+
+### Changed
+- Cập nhật JavaScript frontend để tính giá matcha gram
+- Cập nhật cart hooks để xử lý matcha gram data
+- Cải thiện giao diện với CSS cho dropdown matcha gram
+
+### Fixed
+- Validation giá matcha gram (0-5g, giá >= 0)
+- Tương thích với options hiện có
+- Hỗ trợ đầy đủ HPOS cho matcha gram
+
 ## [1.0.5] - 2024-01-16
 
 ### Changed

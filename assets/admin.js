@@ -89,6 +89,11 @@ jQuery(document).ready(function($) {
             toggleSection($(this), '.options-content');
         });
         
+        // Toggle Matcha Gram Options
+        $('input[name="matcha_gram_enabled"]').on('change', function() {
+            toggleSection($(this), '.matcha-gram-content');
+        });
+        
         // Toggle Extra Info
         $('input[name="extra_info_enabled"]').on('change', function() {
             toggleSection($(this), '.extra-info-content');

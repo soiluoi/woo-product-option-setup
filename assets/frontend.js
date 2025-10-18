@@ -22,6 +22,14 @@ jQuery(document).ready(function($) {
             }, 50); // Giảm debounce để phản hồi nhanh hơn
         });
         
+        // Lắng nghe sự kiện thay đổi matcha gram
+        $('.matcha-gram-select').on('change', function() {
+            clearTimeout(calculationTimeout);
+            calculationTimeout = setTimeout(function() {
+                calculateTotalPrice();
+            }, 50);
+        });
+        
         // Lắng nghe sự kiện quantity change
         $('input[name="quantity"]').on('change', function() {
             calculateTotalPrice();
@@ -72,6 +80,18 @@ jQuery(document).ready(function($) {
                     additionalPrice += price;
                 });
             });
+            
+            // Tính giá từ matcha gram
+            var $matchaGramSelect = $('.matcha-gram-select');
+            if ($matchaGramSelect.length > 0) {
+                var selectedGrams = parseInt($matchaGramSelect.val()) || 0;
+                var pricePerGram = parseFloat($matchaGramSelect.data('price-per-gram')) || 0;
+                
+                if (selectedGrams > 0 && pricePerGram > 0) {
+                    var matchaGramPrice = selectedGrams * pricePerGram;
+                    additionalPrice += matchaGramPrice;
+                }
+            }
             
             // Nhân với quantity
             var totalOriginalPrice = originalPrice * quantity;
