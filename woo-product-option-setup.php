@@ -101,6 +101,7 @@ class Woo_Product_Option_Setup {
         if (is_admin()) {
             require_once WOO_PRODUCT_OPTION_SETUP_PLUGIN_DIR . 'admin/settings-page.php';
             require_once WOO_PRODUCT_OPTION_SETUP_PLUGIN_DIR . 'admin/meta-box.php';
+            require_once WOO_PRODUCT_OPTION_SETUP_PLUGIN_DIR . 'admin/bulk-edit.php';
         }
         
         // Frontend files
@@ -153,8 +154,11 @@ class Woo_Product_Option_Setup {
      * Enqueue scripts và styles cho admin
      */
     public function enqueue_admin_scripts($hook) {
-        // Chỉ load trên trang settings và product edit
-        if ($hook === 'settings_page_woo-product-options' || $hook === 'post.php' || $hook === 'post-new.php') {
+        // Chỉ load trên trang settings, product edit và bulk edit
+        if ($hook === 'settings_page_woo-product-options' || 
+            $hook === 'post.php' || 
+            $hook === 'post-new.php' ||
+            (isset($_GET['page']) && $_GET['page'] === 'woo-bulk-edit-options')) {
             wp_enqueue_script(
                 'woo-product-option-admin',
                 WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/admin.js',

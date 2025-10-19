@@ -445,4 +445,77 @@ jQuery(document).ready(function($) {
         .prop('type', 'text/css')
         .html('.error { border-color: #dc3232 !important; box-shadow: 0 0 2px rgba(220, 50, 50, 0.8) !important; }')
         .appendTo('head');
+    
+    /**
+     * Bulk Edit specific functionality
+     */
+    function initBulkEdit() {
+        // Toggle Product Options
+        $('.options-enabled-toggle').on('change', function() {
+            var $content = $('.options-content');
+            if ($(this).is(':checked')) {
+                $content.slideDown(300);
+            } else {
+                $content.slideUp(300);
+            }
+        });
+        
+        // Toggle Matcha Gram Options
+        $('.matcha-enabled-toggle').on('change', function() {
+            var $content = $('.matcha-gram-content');
+            if ($(this).is(':checked')) {
+                $content.slideDown(300);
+            } else {
+                $content.slideUp(300);
+            }
+        });
+        
+        // Toggle Extra Info
+        $('.extra-info-enabled-toggle').on('change', function() {
+            var $content = $('.extra-info-content');
+            if ($(this).is(':checked')) {
+                $content.slideDown(300);
+            } else {
+                $content.slideUp(300);
+            }
+        });
+        
+        // Toggle group options
+        $('.group-checkbox').on('change', function() {
+            var $group = $(this).closest('.option-group-item');
+            var $content = $group.find('.group-content');
+            
+            if ($(this).is(':checked')) {
+                $content.slideDown(200);
+                $group.removeClass('collapsed');
+            } else {
+                $content.slideUp(200);
+                $group.addClass('collapsed');
+            }
+        });
+        
+        // Toggle option availability
+        $('.option-availability-checkbox').on('change', function() {
+            var $option = $(this).closest('.option-item');
+            var $priceInput = $option.find('.option-price-input');
+            
+            if ($(this).is(':checked')) {
+                $priceInput.prop('disabled', false).css('opacity', '1');
+            } else {
+                $priceInput.prop('disabled', true).css('opacity', '0.5');
+            }
+        });
+        
+        // Initialize disabled state for unchecked options
+        $('.option-availability-checkbox:not(:checked)').each(function() {
+            var $option = $(this).closest('.option-item');
+            var $priceInput = $option.find('.option-price-input');
+            $priceInput.prop('disabled', true).css('opacity', '0.5');
+        });
+    }
+    
+    // Initialize bulk edit if on bulk edit page
+    if ($('.woo-bulk-edit-container').length > 0) {
+        initBulkEdit();
+    }
 });
