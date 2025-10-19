@@ -226,7 +226,7 @@ function woo_product_option_meta_box_callback($post) {
                         <?php foreach ($extra_info_groups as $info): ?>
                             <?php
                             $current_value = get_post_meta($post->ID, '_extra_info_' . $info['slug'], true);
-                            $is_displayed = get_post_meta($post->ID, '_extra_info_' . $info['slug'], false) !== false;
+                            $is_displayed = !empty($current_value);
                             ?>
                             <div class="option-item">
                                 <label class="option-checkbox">
@@ -343,26 +343,25 @@ function woo_product_option_save_meta_box($post_id) {
     // Cập nhật trạng thái enabled
     update_post_meta($post_id, '_extra_info_enabled', $extra_info_enabled ? 'yes' : 'no');
     
-    if ($extra_info_enabled) {
-        $extra_info_groups = get_option('woo_extra_info_groups', array());
+    // Lấy danh sách extra info groups
+    $extra_info_groups = get_option('woo_extra_info_groups', array());
+    
+    // Xử lý metadata dựa trên checkbox tick, không phụ thuộc enabled
+    foreach ($extra_info_groups as $info) {
+        $slug = $info['slug'];
         
-        foreach ($extra_info_groups as $info) {
-            $slug = $info['slug'];
-            
-            // Nếu được chọn hiển thị
-            if (isset($extra_info_display[$slug]) && $extra_info_display[$slug] === 'yes') {
-                // Sử dụng giá trị riêng nếu có, nếu không thì dùng giá trị mặc định từ settings
-                $value_to_save = '';
-                if (isset($extra_info_values[$slug]) && !empty($extra_info_values[$slug])) {
-                    $value_to_save = sanitize_text_field($extra_info_values[$slug]);
-                } else {
-                    $value_to_save = $info['value'];
-                }
-                update_post_meta($post_id, '_extra_info_' . $slug, $value_to_save);
+        if (isset($extra_info_display[$slug]) && $extra_info_display[$slug] === 'yes') {
+            // Lưu value (dù enabled hay không)
+            $value_to_save = '';
+            if (isset($extra_info_values[$slug]) && !empty($extra_info_values[$slug])) {
+                $value_to_save = sanitize_text_field($extra_info_values[$slug]);
             } else {
-                // Xóa meta key nếu không hiển thị
-                delete_post_meta($post_id, '_extra_info_' . $slug);
+                $value_to_save = $info['value'];
             }
+            update_post_meta($post_id, '_extra_info_' . $slug, $value_to_save);
+        } else {
+            // Xóa metadata nếu không tick
+            delete_post_meta($post_id, '_extra_info_' . $slug);
         }
     }
 }
