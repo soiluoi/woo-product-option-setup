@@ -450,33 +450,36 @@ jQuery(document).ready(function($) {
      * Bulk Edit specific functionality
      */
     function initBulkEdit() {
-        // Toggle Product Options
+        // Toggle Product Options (scope theo section hiện tại)
         $('.options-enabled-toggle').on('change', function() {
-            var $content = $('.options-content');
+            var $section = $(this).closest('.woo-product-option-section');
+            var $content = $section.find('.options-content');
             if ($(this).is(':checked')) {
-                $content.slideDown(300);
+                $content.stop(true, true).slideDown(300);
             } else {
-                $content.slideUp(300);
+                $content.stop(true, true).slideUp(300);
             }
         });
         
-        // Toggle Matcha Gram Options
+        // Toggle Matcha Gram Options (scope theo section hiện tại)
         $('.matcha-enabled-toggle').on('change', function() {
-            var $content = $('.matcha-gram-content');
+            var $section = $(this).closest('.woo-product-option-section');
+            var $content = $section.find('.matcha-gram-content');
             if ($(this).is(':checked')) {
-                $content.slideDown(300);
+                $content.stop(true, true).slideDown(300);
             } else {
-                $content.slideUp(300);
+                $content.stop(true, true).slideUp(300);
             }
         });
         
-        // Toggle Extra Info
+        // Toggle Extra Info (scope theo section hiện tại)
         $('.extra-info-enabled-toggle').on('change', function() {
-            var $content = $('.extra-info-content');
+            var $section = $(this).closest('.woo-product-option-section');
+            var $content = $section.find('.extra-info-content');
             if ($(this).is(':checked')) {
-                $content.slideDown(300);
+                $content.stop(true, true).slideDown(300);
             } else {
-                $content.slideUp(300);
+                $content.stop(true, true).slideUp(300);
             }
         });
         
@@ -526,12 +529,17 @@ jQuery(document).ready(function($) {
             updateSelectAllState($group, groupId);
         });
         
-        // Initialize disabled state for unchecked options
+        // Initialize disabled state cho các option chưa chọn
         $('.option-availability-checkbox:not(:checked)').each(function() {
             var $option = $(this).closest('.option-item');
             var $priceInput = $option.find('.option-price-input');
             $priceInput.prop('disabled', true).css('opacity', '0.5');
         });
+
+        // Khởi tạo trạng thái hiển thị ban đầu cho các section
+        $('.options-enabled-toggle').triggerHandler('change');
+        $('.matcha-enabled-toggle').triggerHandler('change');
+        $('.extra-info-enabled-toggle').triggerHandler('change');
         
         // Initialize select all states
         $('.option-group-item').each(function() {
