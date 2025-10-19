@@ -491,19 +491,39 @@ jQuery(document).ready(function($) {
             } else {
                 $content.slideUp(200);
                 $group.addClass('collapsed');
+                // Uncheck all options in this group when group is unchecked
+                $group.find('.option-availability-checkbox').prop('checked', false).trigger('change');
+                $group.find('.select-all-checkbox').prop('checked', false);
             }
+        });
+        
+        // Select all options in a group
+        $('.select-all-checkbox').on('change', function() {
+            var groupId = $(this).data('group');
+            var isChecked = $(this).is(':checked');
+            var $group = $(this).closest('.option-group-item');
+            
+            // Toggle all options in this group
+            $group.find('.option-availability-checkbox[data-group="' + groupId + '"]')
+                  .prop('checked', isChecked)
+                  .trigger('change');
         });
         
         // Toggle option availability
         $('.option-availability-checkbox').on('change', function() {
             var $option = $(this).closest('.option-item');
             var $priceInput = $option.find('.option-price-input');
+            var groupId = $(this).data('group');
+            var $group = $(this).closest('.option-group-item');
             
             if ($(this).is(':checked')) {
                 $priceInput.prop('disabled', false).css('opacity', '1');
             } else {
                 $priceInput.prop('disabled', true).css('opacity', '0.5');
             }
+            
+            // Update "select all" checkbox state
+            updateSelectAllState($group, groupId);
         });
         
         // Initialize disabled state for unchecked options
@@ -512,6 +532,33 @@ jQuery(document).ready(function($) {
             var $priceInput = $option.find('.option-price-input');
             $priceInput.prop('disabled', true).css('opacity', '0.5');
         });
+        
+        // Initialize select all states
+        $('.option-group-item').each(function() {
+            var $group = $(this);
+            var groupId = $group.find('.option-availability-checkbox').first().data('group');
+            if (groupId) {
+                updateSelectAllState($group, groupId);
+            }
+        });
+        
+        /**
+         * Update "select all" checkbox state based on individual options
+         */
+        function updateSelectAllState($group, groupId) {
+            var $selectAll = $group.find('.select-all-checkbox[data-group="' + groupId + '"]');
+            var $options = $group.find('.option-availability-checkbox[data-group="' + groupId + '"]');
+            var checkedCount = $options.filter(':checked').length;
+            var totalCount = $options.length;
+            
+            if (checkedCount === 0) {
+                $selectAll.prop('checked', false).prop('indeterminate', false);
+            } else if (checkedCount === totalCount) {
+                $selectAll.prop('checked', true).prop('indeterminate', false);
+            } else {
+                $selectAll.prop('checked', false).prop('indeterminate', true);
+            }
+        }
     }
     
     // Initialize bulk edit if on bulk edit page

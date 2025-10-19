@@ -219,7 +219,7 @@ function woo_product_option_render_bulk_options_form() {
                     </a>
                 </p>
             <?php else: ?>
-                <p class="description"><?php _e('Chọn các nhóm option muốn áp dụng cho tất cả sản phẩm:', 'woo-product-option-setup'); ?></p>
+                <p class="description"><?php _e('Chọn các nhóm option và options cụ thể muốn áp dụng cho tất cả sản phẩm:', 'woo-product-option-setup'); ?></p>
                 
                 <?php foreach ($option_groups as $group): ?>
                     <div class="option-group-item">
@@ -238,26 +238,37 @@ function woo_product_option_render_bulk_options_form() {
                         
                         <div class="group-content">
                             <?php if (!empty($group['options'])): ?>
-                                <?php foreach ($group['options'] as $option): ?>
-                                    <div class="option-item">
-                                        <label class="option-checkbox">
-                                            <input type="checkbox" 
-                                                   name="available_options[<?php echo esc_attr($group['id']); ?>][]" 
-                                                   value="<?php echo esc_attr($option['id']); ?>"
-                                                   class="option-availability-checkbox">
-                                            <span class="option-name"><?php echo esc_html($option['name']); ?></span>
-                                        </label>
-                                        
-                                        <input type="number" 
-                                               name="option_prices[<?php echo esc_attr($group['id']); ?>][<?php echo esc_attr($option['id']); ?>]" 
-                                               value="<?php echo esc_attr($option['price']); ?>" 
-                                               placeholder="<?php echo esc_attr($option['price']); ?>"
-                                               min="0" 
-                                               step="1" 
-                                               class="option-price-input">
-                                        <span class="price-unit">k</span>
-                                    </div>
-                                <?php endforeach; ?>
+                                <div class="group-options-header">
+                                    <label class="select-all-options">
+                                        <input type="checkbox" class="select-all-checkbox" data-group="<?php echo esc_attr($group['id']); ?>">
+                                        <strong><?php _e('Chọn tất cả options trong nhóm này', 'woo-product-option-setup'); ?></strong>
+                                    </label>
+                                </div>
+                                
+                                <div class="group-options-list">
+                                    <?php foreach ($group['options'] as $option): ?>
+                                        <div class="option-item">
+                                            <label class="option-checkbox">
+                                                <input type="checkbox" 
+                                                       name="available_options[<?php echo esc_attr($group['id']); ?>][]" 
+                                                       value="<?php echo esc_attr($option['id']); ?>"
+                                                       class="option-availability-checkbox"
+                                                       data-group="<?php echo esc_attr($group['id']); ?>">
+                                                <span class="option-name"><?php echo esc_html($option['name']); ?></span>
+                                            </label>
+                                            
+                                            <input type="number" 
+                                                   name="option_prices[<?php echo esc_attr($group['id']); ?>][<?php echo esc_attr($option['id']); ?>]" 
+                                                   value="<?php echo esc_attr($option['price']); ?>" 
+                                                   placeholder="<?php echo esc_attr($option['price']); ?>"
+                                                   min="0" 
+                                                   step="1" 
+                                                   class="option-price-input"
+                                                   disabled>
+                                            <span class="price-unit">k</span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php else: ?>
                                 <p class="no-options"><?php _e('Nhóm này chưa có tùy chọn nào.', 'woo-product-option-setup'); ?></p>
                             <?php endif; ?>
