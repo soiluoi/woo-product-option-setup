@@ -177,305 +177,304 @@ function woo_product_option_display_options() {
 }
 
 /**
- * Thêm CSS cho frontend
+ * CSS đã được chuyển sang assets/frontend.css
+ * Function này được comment để tránh duplicate CSS
  */
-add_action('wp_head', 'woo_product_option_frontend_styles');
+// add_action('wp_head', 'woo_product_option_frontend_styles');
 
-function woo_product_option_frontend_styles() {
-    if (!is_product()) {
-        return;
-    }
-    ?>
-    <style>
-    .woo-product-options-container {
-        margin: 20px 0;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background: #f9f9f9;
-    }
-    
-    .product-options-section,
-    .extra-info-section {
-        margin-bottom: 20px;
-    }
-    
-    .product-options-section h3,
-    .extra-info-section h3 {
-        margin-top: 0;
-        color: #333;
-        border-bottom: 2px solid #0073aa;
-        padding-bottom: 5px;
-    }
-    
-    .option-group {
-        margin-bottom: 20px;
-        padding: 15px;
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 3px;
-    }
-    
-    .group-title {
-        margin: 0 0 10px 0;
-        font-weight: bold;
-        color: #555;
-    }
-    
-    .group-options {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .option-item label {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 3px;
-        transition: background-color 0.2s;
-    }
-    
-    .option-item label:hover {
-        background-color: #f0f0f0;
-    }
-    
-    .option-item input[type="radio"],
-    .option-item input[type="checkbox"] {
-        margin-right: 8px;
-    }
-    
-    .option-name {
-        font-weight: 500;
-    }
-    
-    .option-price {
-        color: #0073aa;
-        font-weight: bold;
-        margin-left: auto;
-    }
-    
-    .price-summary {
-        margin-top: 20px;
-        padding: 15px;
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 3px;
-    }
-    
-    .price-summary > div {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-    }
-    
-    .price-summary .total-price {
-        font-weight: bold;
-        font-size: 1.1em;
-        color: #0073aa;
-        border-top: 1px solid #e0e0e0;
-        padding-top: 10px;
-        margin-top: 10px;
-    }
-    
-    .extra-info-item {
-        margin-bottom: 15px;
-    }
-    
-    .extra-info-item label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 500;
-        color: #555;
-    }
-    
-    .extra-info-input {
-        width: 100%;
-        max-width: 300px;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-    }
-    
-    .extra-info-input:focus {
-        border-color: #0073aa;
-        outline: none;
-        box-shadow: 0 0 0 1px #0073aa;
-    }
-    
-    /* CSS cho Matcha Gram Section */
-    .matcha-gram-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 3px;
-    }
-    
-    .matcha-gram-select-wrapper {
-        margin-top: 10px;
-    }
-    
-    .matcha-gram-select {
-        width: 100%;
-        max-width: 300px;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        font-size: 14px;
-        background-color: #fff;
-        cursor: pointer;
-        transition: border-color 0.2s;
-    }
-    
-    .matcha-gram-select:hover {
-        border-color: #0073aa;
-    }
-    
-    .matcha-gram-select:focus {
-        border-color: #0073aa;
-        outline: none;
-        box-shadow: 0 0 0 1px #0073aa;
-    }
-    
-    /* CSS cho shortcode extra info */
-    .woo-extra-info-display {
-        margin: 15px 0;
-    }
-    
-    .woo-extra-info-display .extra-info-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-        padding: 5px 0;
-    }
-    
-    .woo-extra-info-display .info-label {
-        font-weight: 500;
-        color: #555;
-        margin-right: 10px;
-        min-width: 120px;
-    }
-    
-    .woo-extra-info-display .info-value {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-    }
-    
-    /* Hiển thị SVG icon thay cho block màu */
-
-    .woo-extra-info-display .full,
-    .woo-extra-info-display .half {
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 2px;
-        width: 30px;
-        height: 30px;
-        /* Không background, loại bỏ border-radius cũ */
-        background-image: url('<?php echo plugins_url( 'assets/full-leaf.svg', dirname(__FILE__) ); ?>');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        padding: 0;
-    }
-    .woo-extra-info-display .half {
-        background-image: url('<?php echo plugins_url( 'assets/half-leaf.svg', dirname(__FILE__) ); ?>');
-    }
-    
-    @media (max-width: 768px) {
-        .woo-product-options-container {
-            margin: 15px 0;
-            padding: 15px;
-        }
-        
-        .group-options {
-            gap: 5px;
-        }
-        
-        .option-item label {
-            padding: 3px;
-        }
-        
-        .woo-extra-info-display .extra-info-item {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .woo-extra-info-display .info-label {
-            min-width: auto;
-            margin-bottom: 5px;
-        }
-    }
-    
-    /* Loading states */
-    .woo-product-option-loading {
-        opacity: 0.6;
-        pointer-events: none;
-    }
-    
-    .woo-product-option-loading::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        margin: -10px 0 0 -10px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #0073aa;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* Message styles */
-    .woo-product-option-message {
-        margin: 10px 0;
-        padding: 10px;
-        border-radius: 3px;
-        font-weight: 500;
-    }
-    
-    .woo-product-option-message.woocommerce-message {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .woo-product-option-message.woocommerce-error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    /* Button loading state */
-    .single_add_to_cart_button.loading {
-        position: relative;
-        color: transparent !important;
-    }
-    
-    .single_add_to_cart_button.loading::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 16px;
-        height: 16px;
-        margin: -8px 0 0 -8px;
-        border: 2px solid #ffffff;
-        border-top: 2px solid transparent;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    </style>
-    <?php
-}
+// function woo_product_option_frontend_styles() {
+//     if (!is_product()) {
+//         return;
+//     }
+//     ?>
+//     <style>
+//     .woo-product-options-container {
+//         margin: 20px 0;
+//         padding: 20px;
+//         border: 1px solid #ddd;
+//         border-radius: 5px;
+//         background: #f9f9f9;
+//     }
+//     
+//     .product-options-section,
+//     .extra-info-section {
+//         margin-bottom: 20px;
+//     }
+//     
+//     .product-options-section h3,
+//     .extra-info-section h3 {
+//         margin-top: 0;
+//         color: #333;
+//         border-bottom: 2px solid #0073aa;
+//         padding-bottom: 5px;
+//     }
+//     
+//     .option-group {
+//         margin-bottom: 20px;
+//         padding: 15px;
+//         background: #fff;
+//         border: 1px solid #e0e0e0;
+//         border-radius: 3px;
+//     }
+//     
+//     .group-title {
+//         margin: 0 0 10px 0;
+//         font-weight: bold;
+//         color: #555;
+//     }
+//     
+//     .group-options {
+//         display: flex;
+//         flex-direction: column;
+//         gap: 8px;
+//     }
+//     
+//     .option-item label {
+//         display: flex;
+//         align-items: center;
+//         cursor: pointer;
+//         padding: 5px;
+//         border-radius: 3px;
+//         transition: background-color 0.2s;
+//     }
+//     
+//     .option-item label:hover {
+//         background-color: #f0f0f0;
+//     }
+//     
+//     .option-item input[type="radio"],
+//     .option-item input[type="checkbox"] {
+//         margin-right: 8px;
+//     }
+//     
+//     .option-name {
+//         font-weight: 500;
+//     }
+//     
+//     .option-price {
+//         color: #0073aa;
+//         font-weight: bold;
+//         margin-left: auto;
+//     }
+//     
+//     .price-summary {
+//         margin-top: 20px;
+//         padding: 15px;
+//         background: #fff;
+//         border: 1px solid #e0e0e0;
+//         border-radius: 3px;
+//     }
+//     
+//     .price-summary > div {
+//         display: flex;
+//         justify-content: space-between;
+//         margin-bottom: 5px;
+//     }
+//     
+//     .price-summary .total-price {
+//         font-weight: bold;
+//         font-size: 1.1em;
+//         color: #0073aa;
+//         border-top: 1px solid #e0e0e0;
+//         padding-top: 10px;
+//         margin-top: 10px;
+//     }
+//     
+//     .extra-info-item {
+//         margin-bottom: 15px;
+//     }
+//     
+//     .extra-info-item label {
+//         display: block;
+//         margin-bottom: 5px;
+//         font-weight: 500;
+//         color: #555;
+//     }
+//     
+//     .extra-info-input {
+//         width: 100%;
+//         max-width: 300px;
+//         padding: 8px;
+//         border: 1px solid #ddd;
+//         border-radius: 3px;
+//     }
+//     
+//     .extra-info-input:focus {
+//         border-color: #0073aa;
+//         outline: none;
+//         box-shadow: 0 0 0 1px #0073aa;
+//     }
+//     
+//     /* CSS cho Matcha Gram Section */
+//     .matcha-gram-section {
+//         margin-bottom: 20px;
+//         padding: 15px;
+//         background: #fff;
+//         border: 1px solid #e0e0e0;
+//         border-radius: 3px;
+//     }
+//     
+//     .matcha-gram-select-wrapper {
+//         margin-top: 10px;
+//     }
+//     
+//     .matcha-gram-select {
+//         width: 100%;
+//         max-width: 300px;
+//         padding: 8px 12px;
+//         border: 1px solid #ddd;
+//         border-radius: 3px;
+//         font-size: 14px;
+//         background-color: #fff;
+//         cursor: pointer;
+//         transition: border-color 0.2s;
+//     }
+//     
+//     .matcha-gram-select:hover {
+//         border-color: #0073aa;
+//     }
+//     
+//     .matcha-gram-select:focus {
+//         border-color: #0073aa;
+//         outline: none;
+//         box-shadow: 0 0 0 1px #0073aa;
+//     }
+//     
+//     /* CSS cho shortcode extra info */
+//     .woo-extra-info-display {
+//         margin: 15px 0;
+//     }
+//     
+//     .woo-extra-info-display .extra-info-item {
+//         display: flex;
+//         align-items: center;
+//         margin-bottom: 8px;
+//         padding: 5px 0;
+//     }
+//     
+//     .woo-extra-info-display .info-label {
+//         font-weight: 500;
+//         color: #555;
+//         margin-right: 10px;
+//         min-width: 120px;
+//     }
+//     
+//     .woo-extra-info-display .info-value {
+//         display: flex;
+//         align-items: center;
+//         gap: 2px;
+//     }
+//     
+//     /* Hiển thị SVG icon thay cho block màu */
+//     .woo-extra-info-display .full,
+//     .woo-extra-info-display .half {
+//         display: inline-block;
+//         vertical-align: middle;
+//         margin-right: 2px;
+//         width: 30px;
+//         height: 30px;
+//         background-image: url('<?php echo plugins_url( 'assets/full-leaf.svg', dirname(__FILE__) ); ?>');
+//         background-size: contain;
+//         background-repeat: no-repeat;
+//         background-position: center;
+//         padding: 0;
+//     }
+//     .woo-extra-info-display .half {
+//         background-image: url('<?php echo plugins_url( 'assets/half-leaf.svg', dirname(__FILE__) ); ?>');
+//     }
+//     
+//     @media (max-width: 768px) {
+//         .woo-product-options-container {
+//             margin: 15px 0;
+//             padding: 15px;
+//         }
+//         
+//         .group-options {
+//             gap: 5px;
+//         }
+//         
+//         .option-item label {
+//             padding: 3px;
+//         }
+//         
+//         .woo-extra-info-display .extra-info-item {
+//             flex-direction: column;
+//             align-items: flex-start;
+//         }
+//         
+//         .woo-extra-info-display .info-label {
+//             min-width: auto;
+//             margin-bottom: 5px;
+//         }
+//     }
+//     
+//     /* Loading states */
+//     .woo-product-option-loading {
+//         opacity: 0.6;
+//         pointer-events: none;
+//     }
+//     
+//     .woo-product-option-loading::after {
+//         content: '';
+//         position: absolute;
+//         top: 50%;
+//         left: 50%;
+//         width: 20px;
+//         height: 20px;
+//         margin: -10px 0 0 -10px;
+//         border: 2px solid #f3f3f3;
+//         border-top: 2px solid #0073aa;
+//         border-radius: 50%;
+//         animation: spin 1s linear infinite;
+//     }
+//     
+//     @keyframes spin {
+//         0% { transform: rotate(0deg); }
+//         100% { transform: rotate(360deg); }
+//     }
+//     
+//     /* Message styles */
+//     .woo-product-option-message {
+//         margin: 10px 0;
+//         padding: 10px;
+//         border-radius: 3px;
+//         font-weight: 500;
+//     }
+//     
+//     .woo-product-option-message.woocommerce-message {
+//         background: #d4edda;
+//         color: #155724;
+//         border: 1px solid #c3e6cb;
+//     }
+//     
+//     .woo-product-option-message.woocommerce-error {
+//         background: #f8d7da;
+//         color: #721c24;
+//         border: 1px solid #f5c6cb;
+//     }
+//     
+//     /* Button loading state */
+//     .single_add_to_cart_button.loading {
+//         position: relative;
+//         color: transparent !important;
+//     }
+//     
+//     .single_add_to_cart_button.loading::after {
+//         content: '';
+//         position: absolute;
+//         top: 50%;
+//         left: 50%;
+//         width: 16px;
+//         height: 16px;
+//         margin: -8px 0 0 -8px;
+//         border: 2px solid #ffffff;
+//         border-top: 2px solid transparent;
+//         border-radius: 50%;
+//         animation: spin 1s linear infinite;
+//     }
+//     </style>
+//     <?php
+// }
 
 /**
  * Shortcode hiển thị extra info
@@ -483,20 +482,43 @@ function woo_product_option_frontend_styles() {
 add_shortcode('woo_extra_info', 'woo_product_extra_info_shortcode');
 
 function woo_product_extra_info_shortcode($atts) {
+    // Force enqueue CSS nếu chưa load
+    if (!wp_style_is('woo-product-option-frontend-css', 'enqueued')) {
+        wp_enqueue_style(
+            'woo-product-option-frontend-css',
+            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.css',
+            array(),
+            WOO_PRODUCT_OPTION_SETUP_VERSION
+        );
+    }
+    
     global $product;
     
-    // Lấy product ID với error handling
+    // Lấy product ID với error handling - HỖ TRỢ ARCHIVE
     $product_id = null;
-    if (is_product() && $product) {
-        $product_id = $product->get_id();
-    } elseif (isset($atts['product_id'])) {
+    
+    // 1. Ưu tiên product_id từ shortcode attribute
+    if (isset($atts['product_id'])) {
         $product_id = intval($atts['product_id']);
-    } else {
-        return '';
+    }
+    // 2. Lấy từ global $product (single product page)
+    elseif (is_product() && $product) {
+        $product_id = $product->get_id();
+    }
+    // 3. Lấy từ loop context (archive pages)
+    elseif (!is_product() && $product && is_a($product, 'WC_Product')) {
+        $product_id = $product->get_id();
+    }
+    // 4. Fallback: lấy từ current post trong loop
+    else {
+        $current_product = wc_get_product(get_the_ID());
+        if ($current_product) {
+            $product_id = $current_product->get_id();
+        }
     }
     
     if (!$product_id || $product_id <= 0) {
-        error_log('Woo Product Option Setup: Invalid product ID in shortcode');
+        // Không log error trong archive để tránh spam log
         return '';
     }
     

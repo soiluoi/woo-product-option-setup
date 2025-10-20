@@ -121,6 +121,11 @@ class Woo_Product_Option_Setup {
         add_action('wp_ajax_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         add_action('wp_ajax_nopriv_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         
+        // Elementor compatibility
+        if (did_action('elementor/loaded')) {
+            add_action('elementor/frontend/after_enqueue_styles', array($this, 'elementor_enqueue_styles'));
+        }
+        
         // Admin hooks
         if (is_admin()) {
             add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -131,7 +136,17 @@ class Woo_Product_Option_Setup {
      * Enqueue scripts và styles cho frontend
      */
     public function enqueue_frontend_scripts() {
-        if (is_product()) {
+        // Load khi: trang product HOẶC có shortcode HOẶC trong Elementor HOẶC archive
+        if (is_product() || is_archive() || $this->has_plugin_shortcode() || $this->is_elementor_edit_mode()) {
+            // Enqueue CSS
+            wp_enqueue_style(
+                'woo-product-option-frontend-css',
+                WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.css',
+                array(),
+                WOO_PRODUCT_OPTION_SETUP_VERSION
+            );
+            
+            // Enqueue JS
             wp_enqueue_script(
                 'woo-product-option-frontend',
                 WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js',
@@ -280,6 +295,40 @@ class Woo_Product_Option_Setup {
         }
     }
     
+    /**
+     * Kiểm tra có shortcode plugin trong content
+     */
+    private function has_plugin_shortcode() {
+        global $post;
+        if (is_a($post, 'WP_Post')) {
+            return has_shortcode($post->post_content, 'woo_extra_info');
+        }
+        return false;
+    }
+
+    /**
+     * Kiểm tra đang trong Elementor edit mode
+     */
+    private function is_elementor_edit_mode() {
+        if (class_exists('\Elementor\Plugin')) {
+            return \Elementor\Plugin::$instance->editor->is_edit_mode() || 
+                   \Elementor\Plugin::$instance->preview->is_preview_mode();
+        }
+        return false;
+    }
+
+    /**
+     * Force enqueue styles trong Elementor
+     */
+    public function elementor_enqueue_styles() {
+        wp_enqueue_style(
+            'woo-product-option-frontend-css',
+            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.css',
+            array(),
+            WOO_PRODUCT_OPTION_SETUP_VERSION
+        );
+    }
+
     /**
      * Khai báo tương thích với HPOS (High-Performance Order Storage)
      */
