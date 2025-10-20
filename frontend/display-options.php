@@ -492,6 +492,24 @@ function woo_product_extra_info_shortcode($atts) {
         );
     }
     
+    // Force enqueue JS nếu chưa load (chỉ khi cần thiết)
+    if (!wp_script_is('woo-product-option-frontend', 'enqueued')) {
+        wp_enqueue_script(
+            'woo-product-option-frontend',
+            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js',
+            array('jquery'),
+            WOO_PRODUCT_OPTION_SETUP_VERSION,
+            true
+        );
+        
+        wp_localize_script('woo-product-option-frontend', 'wooProductOption', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('woo_product_option_nonce'),
+            'currencySymbol' => 'k',
+            'priceFormat' => '%s'
+        ));
+    }
+    
     global $product;
     
     // Lấy product ID với error handling - HỖ TRỢ ARCHIVE

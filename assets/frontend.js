@@ -5,8 +5,10 @@
 jQuery(document).ready(function($) {
     'use strict';
     
-    // Khởi tạo tính giá
-    initPriceCalculation();
+    // Chỉ init khi có elements cần thiết
+    if ($('.woo-product-options-container').length > 0) {
+        initPriceCalculation();
+    }
     
     /**
      * Khởi tạo tính giá
@@ -170,15 +172,11 @@ jQuery(document).ready(function($) {
     }
     
     /**
-     * Xử lý AJAX Add to Cart
+     * Xử lý AJAX Add to Cart - chỉ bind khi có form cart
      */
-    $('form.cart').on('submit', function(e) {
-        // Không preventDefault trong Elementor editor để không ảnh hưởng đến việc lưu page
-        if (typeof wooProductOption !== 'undefined' && wooProductOption.isElementorEditor) {
-            return true; // Cho phép form submit bình thường trong Elementor editor
-        }
-        
-        e.preventDefault();
+    if ($('form.cart').length > 0) {
+        $('form.cart').on('submit', function(e) {
+            e.preventDefault();
         
         var isValid = validateProductOptions();
         if (!isValid) {
@@ -242,7 +240,8 @@ jQuery(document).ready(function($) {
         });
         
         return false;
-    });
+        });
+    }
     
     /**
      * Validate product options

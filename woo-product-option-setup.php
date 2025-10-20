@@ -121,11 +121,6 @@ class Woo_Product_Option_Setup {
         add_action('wp_ajax_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         add_action('wp_ajax_nopriv_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         
-        // Elementor compatibility - đăng ký muộn hơn để đảm bảo Elementor đã load
-        add_action('elementor/loaded', array($this, 'init_elementor_hooks'));
-        
-        // Fallback hooks cho Elementor - đảm bảo load trong mọi trường hợp
-        add_action('wp_enqueue_scripts', array($this, 'fallback_elementor_enqueue'), 20);
         
         // Admin hooks
         if (is_admin()) {
@@ -137,8 +132,8 @@ class Woo_Product_Option_Setup {
      * Enqueue scripts và styles cho frontend
      */
     public function enqueue_frontend_scripts() {
-        // Load khi: trang product HOẶC có shortcode HOẶC trong Elementor HOẶC archive
-        if (is_product() || is_archive() || $this->has_plugin_shortcode() || $this->is_elementor_edit_mode()) {
+        // Chỉ load khi có shortcode hoặc trang product/archive
+        if ($this->has_plugin_shortcode() || is_product() || is_archive()) {
             // Enqueue CSS
             wp_enqueue_style(
                 'woo-product-option-frontend-css',
@@ -161,7 +156,7 @@ class Woo_Product_Option_Setup {
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('woo_product_option_nonce'),
                 'currencySymbol' => 'k',
-                'priceFormat' => '%s' // Format đơn giản cho "k"
+                'priceFormat' => '%s'
             ));
         }
     }
@@ -301,89 +296,33 @@ class Woo_Product_Option_Setup {
      */
     private function has_plugin_shortcode() {
         global $post;
-        if (is_a($post, 'WP_Post')) {
-            return has_shortcode($post->post_content, 'woo_extra_info');
+        
+        // Kiểm tra post content
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'woo_extra_info')) {
+            return true;
         }
-        return false;
-    }
-
-    /**
-     * Kiểm tra đang trong Elementor edit mode
-     */
-    private function is_elementor_edit_mode() {
+        
+        // Kiểm tra trong Elementor editor/preview
         if (class_exists('\Elementor\Plugin')) {
-            return \Elementor\Plugin::$instance->editor->is_edit_mode() || 
-                   \Elementor\Plugin::$instance->preview->is_preview_mode() ||
-                   (isset($_GET['action']) && $_GET['action'] === 'elementor') ||
-                   (isset($_GET['elementor-preview']) && $_GET['elementor-preview']) ||
-                   (isset($_GET['post_type']) && $_GET['post_type'] === 'elementor_library') ||
-                   (isset($_GET['elementor_library_type']) && !empty($_GET['elementor_library_type'])) ||
-                   (is_admin() && isset($_GET['page']) && strpos($_GET['page'], 'elementor') !== false);
+            if (\Elementor\Plugin::$instance->editor->is_edit_mode() || 
+                \Elementor\Plugin::$instance->preview->is_preview_mode()) {
+                return true;
+            }
         }
+        
+        // Kiểm tra JetThemeCore template
+        if (isset($_GET['post_type']) && $_GET['post_type'] === 'jet-theme-core') {
+            return true;
+        }
+        
+        // Kiểm tra archive context (có thể có shortcode trong template)
+        if (is_archive() || is_home()) {
+            return true;
+        }
+        
         return false;
     }
 
-    /**
-     * Khởi tạo Elementor hooks sau khi Elementor đã load
-     */
-    public function init_elementor_hooks() {
-        // Frontend hooks
-        add_action('elementor/frontend/after_enqueue_styles', array($this, 'elementor_enqueue_styles'));
-        add_action('elementor/frontend/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
-        
-        // Editor hooks
-        add_action('elementor/editor/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
-        add_action('elementor/editor/before_enqueue_styles', array($this, 'elementor_enqueue_styles'));
-        
-        // Template hooks
-        add_action('elementor/template/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
-        add_action('elementor/template/before_enqueue_styles', array($this, 'elementor_enqueue_styles'));
-    }
-
-    /**
-     * Force enqueue styles trong Elementor
-     */
-    public function elementor_enqueue_styles() {
-        wp_enqueue_style(
-            'woo-product-option-frontend-css',
-            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.css',
-            array(),
-            WOO_PRODUCT_OPTION_SETUP_VERSION
-        );
-    }
-
-    /**
-     * Force enqueue scripts trong Elementor editor
-     */
-    public function elementor_enqueue_scripts() {
-        wp_enqueue_script(
-            'woo-product-option-frontend',
-            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js',
-            array('jquery'),
-            WOO_PRODUCT_OPTION_SETUP_VERSION,
-            true
-        );
-        
-        // Localize script để truyền dữ liệu từ PHP sang JS
-        wp_localize_script('woo-product-option-frontend', 'wooProductOption', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('woo_product_option_nonce'),
-            'currencySymbol' => 'k',
-            'priceFormat' => '%s',
-            'isElementorEditor' => true // Flag để JS biết đang trong Elementor editor
-        ));
-    }
-
-    /**
-     * Fallback enqueue cho Elementor - đảm bảo load trong mọi trường hợp
-     */
-    public function fallback_elementor_enqueue() {
-        // Chỉ chạy nếu đang trong Elementor context và chưa load assets
-        if ($this->is_elementor_edit_mode() && !wp_style_is('woo-product-option-frontend-css', 'enqueued')) {
-            $this->elementor_enqueue_styles();
-            $this->elementor_enqueue_scripts();
-        }
-    }
 
     /**
      * Khai báo tương thích với HPOS (High-Performance Order Storage)
