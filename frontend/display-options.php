@@ -112,6 +112,7 @@ function woo_product_option_display_options() {
                                 $final_price = $custom_price ?: $option['price'];
                                 $price_display = $final_price > 0 ? ' (+' . $final_price . 'k)' : '';
                                 $is_first = $index === 0;
+                                $should_check = ($group['type'] === 'radio' && $is_first);
                                 ?>
                                 
                                 <div class="option-item">
@@ -121,7 +122,7 @@ function woo_product_option_display_options() {
                                                name="product_options[<?php echo esc_attr($group['id']); ?>]<?php echo $group['type'] === 'checkbox' ? '[]' : ''; ?>" 
                                                value="<?php echo esc_attr($option['id']); ?>" 
                                                data-price="<?php echo esc_attr(intval($final_price) * WOO_PRODUCT_OPTION_SETUP_PRICE_MULTIPLIER); ?>"
-                                               <?php echo $is_first ? 'checked' : ''; ?>>
+                                               <?php echo $should_check ? 'checked' : ''; ?>>
                                         
                                         <span class="option-name"><?php echo esc_html($option['name']); ?></span>
                                         <span class="option-price"><?php echo $price_display; ?></span>
