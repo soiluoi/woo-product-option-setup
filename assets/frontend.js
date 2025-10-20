@@ -170,6 +170,48 @@ jQuery(document).ready(function($) {
     }
     
     /**
+     * API khởi tạo lại cho quickview/archive
+     * Gọi sau khi bạn inject HTML quickview vào DOM
+     * window.initWooProductOptions(root)
+     */
+    window.initWooProductOptions = function(root) {
+        var $ = jQuery;
+        var $root = root ? (root.jquery ? root : $(root)) : $('.woo-product-options-container').first();
+        if (!$root || !$root.length) return;
+
+        var $containers = $root.hasClass('woo-product-options-container') ? $root : $root.find('.woo-product-options-container');
+
+        $containers.each(function() {
+            var $container = $(this);
+
+            // Tránh bind trùng
+            $container.off('.qvopts');
+
+            var calculationTimeout;
+            $container.on('change.qvopts', 'input[type="radio"], input[type="checkbox"]', function() {
+                clearTimeout(calculationTimeout);
+                calculationTimeout = setTimeout(function() { calculateTotalPrice(); }, 50);
+            });
+
+            $container.on('change.qvopts', '.matcha-gram-select', function() {
+                clearTimeout(calculationTimeout);
+                calculationTimeout = setTimeout(function() { calculateTotalPrice(); }, 50);
+            });
+
+            var $form = $container.closest('form.cart');
+            if ($form.length) {
+                $form.off('change.qvopts', 'input[name="quantity"]')
+                    .on('change.qvopts', 'input[name="quantity"]', function() {
+                        calculateTotalPrice();
+                    });
+            }
+
+            // Tính lần đầu
+            calculateTotalPrice();
+        });
+    };
+
+    /**
      * Xử lý AJAX Add to Cart
      */
     $('form.cart').on('submit', function(e) {
