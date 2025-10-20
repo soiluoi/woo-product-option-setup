@@ -122,6 +122,17 @@
     margin: 10px 0;
 }
 
+.group-disabled-notice {
+    color: #d63638;
+    font-style: italic;
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: #fef7f7;
+    border: 1px solid #f0b7b8;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
 /* Extra Info Groups */
 
 .info-header {

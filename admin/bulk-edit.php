@@ -9,6 +9,26 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Hiển thị thông báo thành công sau bulk edit
+ */
+add_action('admin_notices', 'woo_product_option_bulk_edit_success_notice');
+
+function woo_product_option_bulk_edit_success_notice() {
+    if (isset($_GET['bulk_edit_success']) && $_GET['bulk_edit_success'] == '1') {
+        $updated_count = isset($_GET['updated_count']) ? intval($_GET['updated_count']) : 0;
+        echo '<div class="notice notice-success is-dismissible"><p>' . 
+             sprintf(__('Đã cập nhật thành công %d sản phẩm!', 'woo-product-option-setup'), $updated_count) . 
+             '</p></div>';
+    }
+    
+    if (isset($_GET['bulk_edit_error']) && $_GET['bulk_edit_error'] == '1') {
+        echo '<div class="notice notice-error is-dismissible"><p>' . 
+             __('Phiên làm việc đã hết hạn. Vui lòng chọn lại sản phẩm để chỉnh sửa.', 'woo-product-option-setup') . 
+             '</p></div>';
+    }
+}
+
+/**
  * Đăng ký bulk actions cho Products list
  */
 add_filter('bulk_actions-edit-product', 'woo_product_option_add_bulk_actions');
@@ -83,6 +103,11 @@ function woo_product_option_bulk_edit_page() {
     // Lấy product IDs
     $product_ids = get_transient($products_key);
     if (!$product_ids || empty($product_ids)) {
+        // Nếu không có product IDs và không phải là form submit, redirect về all products
+        if (!isset($_POST['submit'])) {
+            wp_redirect(admin_url('edit.php?post_type=product&bulk_edit_error=1'));
+            exit;
+        }
         wp_die(__('Không tìm thấy sản phẩm nào để chỉnh sửa.', 'woo-product-option-setup'));
     }
     
@@ -90,12 +115,14 @@ function woo_product_option_bulk_edit_page() {
     if (isset($_POST['submit']) && wp_verify_nonce($_POST['woo_bulk_edit_nonce'], 'woo_bulk_edit_action')) {
         $result = woo_product_option_process_bulk_edit($edit_type, $product_ids);
         
+        // Xóa transient sau khi xử lý xong
+        delete_transient($products_key);
+        
         if ($result['success']) {
-            add_action('admin_notices', function() use ($result) {
-                echo '<div class="notice notice-success"><p>' . 
-                     sprintf(__('Đã cập nhật thành công %d sản phẩm!', 'woo-product-option-setup'), $result['updated_count']) . 
-                     '</p></div>';
-            });
+            // Redirect về all products với thông báo thành công
+            $redirect_url = admin_url('edit.php?post_type=product&bulk_edit_success=1&updated_count=' . $result['updated_count']);
+            wp_redirect($redirect_url);
+            exit;
         } else {
             add_action('admin_notices', function() use ($result) {
                 echo '<div class="notice notice-error"><p>' . 
@@ -119,9 +146,6 @@ function woo_product_option_bulk_edit_page() {
             );
         }
     }
-    
-    // Xóa transient sau khi sử dụng
-    delete_transient($products_key);
     
     // Hiển thị trang
     ?>
@@ -434,6 +458,26 @@ function woo_bulk_save_options($product_ids) {
                 }
             }
         }
+        
+        // Cập nhật selected_group_ids để hiển thị đúng trong meta box
+        $option_groups_data['selected_group_ids'] = array_keys($option_groups_data['selected_groups']);
+    } else {
+        // Nếu disable options, preserve data cũ nhưng set enabled = false
+        $option_groups_data = array(
+            'enabled' => false,
+            'selected_groups' => array(),
+            'selected_group_ids' => array()
+        );
+        
+        // Preserve data từ sản phẩm đầu tiên để giữ cấu trúc
+        if (!empty($product_ids)) {
+            $first_product_id = $product_ids[0];
+            $old_data = get_post_meta($first_product_id, '_product_option_groups_data', true);
+            if (!empty($old_data)) {
+                $option_groups_data['selected_groups'] = isset($old_data['selected_groups']) ? $old_data['selected_groups'] : array();
+                $option_groups_data['selected_group_ids'] = isset($old_data['selected_group_ids']) ? $old_data['selected_group_ids'] : array();
+            }
+        }
     }
     
     $updated_count = 0;
@@ -442,6 +486,9 @@ function woo_bulk_save_options($product_ids) {
             $updated_count++;
         }
     }
+    
+    // Debug logging (có thể xóa trong production)
+    error_log('Bulk edit options - Updated ' . $updated_count . ' products with data: ' . print_r($option_groups_data, true));
     
     return $updated_count;
 }

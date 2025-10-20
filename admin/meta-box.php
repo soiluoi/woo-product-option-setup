@@ -113,8 +113,13 @@ function woo_product_option_meta_box_callback($post) {
                             </div>
                             
                             <div class="group-content">
+                                <?php 
+                                // Chỉ hiển thị options khi group được enable (checked)
+                                $is_group_enabled = in_array($group['id'], $selected_group_ids);
+                                ?>
                                 
-                                <?php if (!empty($group['options'])): ?>
+                                <?php if ($is_group_enabled && !empty($group['options'])): ?>
+                                    <p class="description"><?php _e('Chọn các options cụ thể muốn hiển thị:', 'woo-product-option-setup'); ?></p>
                                     <?php foreach ($group['options'] as $option): ?>
                                         <?php
                                         $available_options = isset($selected_groups[$group['id']]) ? $selected_groups[$group['id']] : array();
@@ -145,6 +150,8 @@ function woo_product_option_meta_box_callback($post) {
                                             <span class="price-unit">k</span>
                                         </div>
                                     <?php endforeach; ?>
+                                <?php elseif (!$is_group_enabled): ?>
+                                    <p class="group-disabled-notice"><?php _e('Vui lòng bật nhóm này để chọn các options cụ thể.', 'woo-product-option-setup'); ?></p>
                                 <?php else: ?>
                                     <p class="no-options"><?php _e('Nhóm này chưa có tùy chọn nào.', 'woo-product-option-setup'); ?></p>
                                 <?php endif; ?>
@@ -289,14 +296,17 @@ function woo_product_option_save_meta_box($post_id) {
     $available_options = isset($_POST['available_options']) ? $_POST['available_options'] : array();
     $option_prices = isset($_POST['option_prices']) ? $_POST['option_prices'] : array();
     
+    // Lấy dữ liệu cũ để preserve khi disable
+    $old_data = get_post_meta($post_id, '_product_option_groups_data', true);
+    
     $option_groups_data = array(
         'enabled' => $options_enabled,
         'selected_groups' => array(),
-        'selected_group_ids' => $selected_groups
+        'selected_group_ids' => array()
     );
     
     if ($options_enabled) {
-        // Luôn lưu tất cả groups có options được tick (dù group có tick hay không)
+        // Khi enabled: xử lý data mới từ form
         foreach ($available_options as $group_id => $option_ids) {
             if (!empty($option_ids)) {
                 $option_groups_data['selected_groups'][$group_id] = $option_ids;
@@ -318,6 +328,16 @@ function woo_product_option_save_meta_box($post_id) {
                     }
                 }
             }
+        }
+        
+        // Cập nhật selected_group_ids dựa trên selected_groups
+        $option_groups_data['selected_group_ids'] = array_keys($option_groups_data['selected_groups']);
+        
+    } else {
+        // Khi disabled: preserve data cũ nhưng set enabled = false
+        if (!empty($old_data)) {
+            $option_groups_data['selected_groups'] = isset($old_data['selected_groups']) ? $old_data['selected_groups'] : array();
+            $option_groups_data['selected_group_ids'] = isset($old_data['selected_group_ids']) ? $old_data['selected_group_ids'] : array();
         }
     }
     
