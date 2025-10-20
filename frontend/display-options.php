@@ -182,9 +182,7 @@ function woo_product_option_display_options() {
 add_action('wp_head', 'woo_product_option_frontend_styles');
 
 function woo_product_option_frontend_styles() {
-    if (!is_product()) {
-        return;
-    }
+    // CSS sẽ được load trên tất cả các trang để hỗ trợ shortcode
     ?>
     <style>
     .woo-product-options-container {
@@ -344,6 +342,33 @@ function woo_product_option_frontend_styles() {
         margin: 15px 0;
     }
     
+    /* CSS đặc biệt cho archive page */
+    .woocommerce-loop-product__title + .woo-extra-info-display,
+    .product .woo-extra-info-display {
+        margin: 10px 0;
+        font-size: 0.9em;
+    }
+    
+    /* Responsive cho archive page */
+    .woocommerce ul.products li.product .woo-extra-info-display {
+        margin: 8px 0;
+    }
+    
+    .woocommerce ul.products li.product .woo-extra-info-display .extra-info-item {
+        margin-bottom: 5px;
+    }
+    
+    .woocommerce ul.products li.product .woo-extra-info-display .info-label {
+        font-size: 0.85em;
+        min-width: 80px;
+    }
+    
+    .woocommerce ul.products li.product .woo-extra-info-display .full,
+    .woocommerce ul.products li.product .woo-extra-info-display .half {
+        width: 20px;
+        height: 20px;
+    }
+    
     .woo-extra-info-display .extra-info-item {
         display: flex;
         align-items: center;
@@ -490,16 +515,21 @@ function woo_product_extra_info_shortcode($atts) {
     if (isset($atts['product_id']) && intval($atts['product_id']) > 0) {
         $product_id = intval($atts['product_id']);
     } else {
-        global $product;
-        // Nếu trong single product, lấy product ID từ global $product
-        if (is_object($product) && method_exists($product, 'get_id')) {
-            $product_id = $product->get_id();
-        } else {
-            // Nếu đang ở trong loop archive (ví dụ danh mục), lấy qua get_the_ID()
+        // Trong archive page, lấy product ID từ loop hiện tại
+        if (is_shop() || is_product_category() || is_product_tag() || is_product_taxonomy()) {
             $loop_id = get_the_ID();
-            if ($loop_id) {
-                // Đảm bảo đó là product
-                if ('product' === get_post_type($loop_id)) {
+            if ($loop_id && 'product' === get_post_type($loop_id)) {
+                $product_id = $loop_id;
+            }
+        } else {
+            // Trong single product page, lấy từ global $product
+            global $product;
+            if (is_object($product) && method_exists($product, 'get_id')) {
+                $product_id = $product->get_id();
+            } else {
+                // Fallback: lấy từ get_the_ID()
+                $loop_id = get_the_ID();
+                if ($loop_id && 'product' === get_post_type($loop_id)) {
                     $product_id = $loop_id;
                 }
             }
