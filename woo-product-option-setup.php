@@ -131,7 +131,8 @@ class Woo_Product_Option_Setup {
      * Enqueue scripts và styles cho frontend
      */
     public function enqueue_frontend_scripts() {
-        if (is_product()) {
+        // Load script trên single product và các trang shop/archive sản phẩm
+        if (is_product() || is_shop() || is_product_category() || is_product_tag() || is_product_taxonomy()) {
             wp_enqueue_script(
                 'woo-product-option-frontend',
                 WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js',
@@ -139,13 +140,14 @@ class Woo_Product_Option_Setup {
                 WOO_PRODUCT_OPTION_SETUP_VERSION,
                 true
             );
-            
+
             // Localize script để truyền dữ liệu từ PHP sang JS
             wp_localize_script('woo-product-option-frontend', 'wooProductOption', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('woo_product_option_nonce'),
                 'currencySymbol' => 'k',
-                'priceFormat' => '%s' // Format đơn giản cho "k"
+                'priceFormat' => '%s', // Format đơn giản cho "k"
+                'scriptUrl' => WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js'
             ));
         }
     }
