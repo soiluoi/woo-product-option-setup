@@ -124,6 +124,7 @@ class Woo_Product_Option_Setup {
         // Elementor compatibility
         if (did_action('elementor/loaded')) {
             add_action('elementor/frontend/after_enqueue_styles', array($this, 'elementor_enqueue_styles'));
+            add_action('elementor/editor/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
         }
         
         // Admin hooks
@@ -312,7 +313,9 @@ class Woo_Product_Option_Setup {
     private function is_elementor_edit_mode() {
         if (class_exists('\Elementor\Plugin')) {
             return \Elementor\Plugin::$instance->editor->is_edit_mode() || 
-                   \Elementor\Plugin::$instance->preview->is_preview_mode();
+                   \Elementor\Plugin::$instance->preview->is_preview_mode() ||
+                   (isset($_GET['action']) && $_GET['action'] === 'elementor') ||
+                   (isset($_GET['elementor-preview']) && $_GET['elementor-preview']);
         }
         return false;
     }
@@ -327,6 +330,28 @@ class Woo_Product_Option_Setup {
             array(),
             WOO_PRODUCT_OPTION_SETUP_VERSION
         );
+    }
+
+    /**
+     * Force enqueue scripts trong Elementor editor
+     */
+    public function elementor_enqueue_scripts() {
+        wp_enqueue_script(
+            'woo-product-option-frontend',
+            WOO_PRODUCT_OPTION_SETUP_PLUGIN_URL . 'assets/frontend.js',
+            array('jquery'),
+            WOO_PRODUCT_OPTION_SETUP_VERSION,
+            true
+        );
+        
+        // Localize script để truyền dữ liệu từ PHP sang JS
+        wp_localize_script('woo-product-option-frontend', 'wooProductOption', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('woo_product_option_nonce'),
+            'currencySymbol' => 'k',
+            'priceFormat' => '%s',
+            'isElementorEditor' => true // Flag để JS biết đang trong Elementor editor
+        ));
     }
 
     /**

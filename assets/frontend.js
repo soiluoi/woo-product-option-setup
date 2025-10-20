@@ -173,6 +173,11 @@ jQuery(document).ready(function($) {
      * Xử lý AJAX Add to Cart
      */
     $('form.cart').on('submit', function(e) {
+        // Không preventDefault trong Elementor editor để không ảnh hưởng đến việc lưu page
+        if (typeof wooProductOption !== 'undefined' && wooProductOption.isElementorEditor) {
+            return true; // Cho phép form submit bình thường trong Elementor editor
+        }
+        
         e.preventDefault();
         
         var isValid = validateProductOptions();
