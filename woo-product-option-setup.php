@@ -117,6 +117,10 @@ class Woo_Product_Option_Setup {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
+        // Elementor compatibility - FIXED
+        add_action('elementor/frontend/before_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+        add_action('elementor/editor/before_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+        
         // AJAX hooks
         add_action('wp_ajax_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         add_action('wp_ajax_nopriv_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
@@ -132,8 +136,8 @@ class Woo_Product_Option_Setup {
      * Enqueue scripts và styles cho frontend
      */
     public function enqueue_frontend_scripts() {
-        // Chỉ load khi có shortcode hoặc trang product/archive
-        if ($this->has_plugin_shortcode() || is_product() || is_archive()) {
+        // Chỉ load khi có shortcode hoặc trang product/archive - FIXED
+        if ($this->has_plugin_shortcode() || is_product() || is_archive() || $this->is_elementor_context()) {
             // Enqueue CSS
             wp_enqueue_style(
                 'woo-product-option-frontend-css',
@@ -239,14 +243,30 @@ class Woo_Product_Option_Setup {
      * AJAX handler cho Add to Cart với options
      */
     public function ajax_add_to_cart_with_options() {
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'woo_product_option_nonce')) {
+        // Verify nonce - SECURITY FIXED
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'woo_product_option_nonce')) {
             wp_die('Security check failed');
         }
         
-        $product_id = intval($_POST['product_id']);
-        $quantity = intval($_POST['quantity']) ?: 1;
-        $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+        // Validate request method
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            wp_die('Invalid request method');
+        }
+        
+        // Validate và sanitize input - SECURITY FIXED
+        $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
+        $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
+        $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
+        
+        // Validate product_id
+        if ($product_id <= 0) {
+            wp_send_json_error('Invalid product ID');
+        }
+        
+        // Validate quantity
+        if ($quantity <= 0 || $quantity > 100) {
+            wp_send_json_error('Invalid quantity');
+        }
         
         // Validate product
         $product = wc_get_product($product_id);
@@ -257,9 +277,19 @@ class Woo_Product_Option_Setup {
         // Prepare cart item data
         $cart_item_data = array();
         
-        // Add product options if provided
+        // Add product options if provided - SECURITY FIXED
         if (isset($_POST['product_options']) && !empty($_POST['product_options'])) {
-            $cart_item_data['woo_product_options'] = $_POST['product_options'];
+            // Sanitize product options
+            $sanitized_options = array();
+            foreach ($_POST['product_options'] as $group_id => $option_ids) {
+                $group_id = sanitize_text_field($group_id);
+                if (is_array($option_ids)) {
+                    $sanitized_options[$group_id] = array_map('sanitize_text_field', $option_ids);
+                } else {
+                    $sanitized_options[$group_id] = sanitize_text_field($option_ids);
+                }
+            }
+            $cart_item_data['woo_product_options'] = $sanitized_options;
         }
         
         // Add to cart
@@ -302,11 +332,26 @@ class Woo_Product_Option_Setup {
             return true;
         }
         
-        // Kiểm tra trong Elementor editor/preview
+        // Kiểm tra trong Elementor editor/preview - FIXED
         if (class_exists('\Elementor\Plugin')) {
-            if (\Elementor\Plugin::$instance->editor->is_edit_mode() || 
-                \Elementor\Plugin::$instance->preview->is_preview_mode()) {
+            $elementor = \Elementor\Plugin::$instance;
+            
+            // Kiểm tra edit mode
+            if ($elementor->editor->is_edit_mode() || $elementor->preview->is_preview_mode()) {
                 return true;
+            }
+            
+            // Kiểm tra Elementor frontend với template
+            if ($elementor->frontend->is_built_with_elementor(get_the_ID())) {
+                return true;
+            }
+            
+            // Kiểm tra Elementor Pro widgets
+            if (class_exists('\ElementorPro\Plugin')) {
+                $elementor_pro = \ElementorPro\Plugin::instance();
+                if ($elementor_pro->modules_manager->is_module_active('woocommerce')) {
+                    return true;
+                }
             }
         }
         
@@ -320,9 +365,48 @@ class Woo_Product_Option_Setup {
             return true;
         }
         
+        // Kiểm tra trong admin khi edit post
+        if (is_admin() && isset($_GET['post']) && get_post_type($_GET['post']) === 'product') {
+            return true;
+        }
+        
         return false;
     }
-
+    
+    /**
+     * Kiểm tra context Elementor - FIXED
+     */
+    private function is_elementor_context() {
+        // Kiểm tra Elementor editor
+        if (class_exists('\Elementor\Plugin')) {
+            $elementor = \Elementor\Plugin::$instance;
+            
+            // Kiểm tra edit mode
+            if ($elementor->editor->is_edit_mode() || $elementor->preview->is_preview_mode()) {
+                return true;
+            }
+            
+            // Kiểm tra frontend với Elementor
+            if (is_singular() && $elementor->frontend->is_built_with_elementor(get_the_ID())) {
+                return true;
+            }
+            
+            // Kiểm tra Elementor Pro WooCommerce widgets
+            if (class_exists('\ElementorPro\Plugin')) {
+                $elementor_pro = \ElementorPro\Plugin::instance();
+                if ($elementor_pro->modules_manager->is_module_active('woocommerce')) {
+                    return true;
+                }
+            }
+        }
+        
+        // Kiểm tra trong admin khi edit Elementor template
+        if (is_admin() && isset($_GET['action']) && $_GET['action'] === 'elementor') {
+            return true;
+        }
+        
+        return false;
+    }
 
     /**
      * Khai báo tương thích với HPOS (High-Performance Order Storage)

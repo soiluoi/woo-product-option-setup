@@ -44,7 +44,7 @@ function woo_product_option_display_options() {
         return;
     }
     
-    // Lấy dữ liệu từ settings với caching
+    // Lấy dữ liệu từ settings với caching - PERFORMANCE FIXED
     $cache_key = 'woo_product_option_groups';
     $option_groups = wp_cache_get($cache_key, 'woo_product_options');
     
@@ -54,8 +54,8 @@ function woo_product_option_display_options() {
             error_log('Woo Product Option Setup: Failed to get option groups from settings');
             return;
         }
-        // Cache trong 1 giờ
-        wp_cache_set($cache_key, $option_groups, 'woo_product_options', 3600);
+        // Cache trong 2 giờ để giảm database queries
+        wp_cache_set($cache_key, $option_groups, 'woo_product_options', 7200);
     }
     
     // Kiểm tra Matcha Gram có enabled không
@@ -512,26 +512,29 @@ function woo_product_extra_info_shortcode($atts) {
     
     global $product;
     
-    // Lấy product ID với error handling - HỖ TRỢ ARCHIVE
+    // Lấy product ID với error handling - FIXED SECURITY
     $product_id = null;
     
-    // 1. Ưu tiên product_id từ shortcode attribute
+    // 1. Ưu tiên product_id từ shortcode attribute - SECURITY FIXED
     if (isset($atts['product_id'])) {
-        $product_id = intval($atts['product_id']);
+        $product_id = absint($atts['product_id']); // Sử dụng absint thay vì intval
     }
-    // 2. Lấy từ global $product (single product page)
-    elseif (is_product() && $product) {
+    // 2. Lấy từ global $product (single product page) - SECURITY FIXED
+    elseif (is_product() && $product && is_a($product, 'WC_Product')) {
         $product_id = $product->get_id();
     }
-    // 3. Lấy từ loop context (archive pages)
+    // 3. Lấy từ loop context (archive pages) - SECURITY FIXED
     elseif (!is_product() && $product && is_a($product, 'WC_Product')) {
         $product_id = $product->get_id();
     }
-    // 4. Fallback: lấy từ current post trong loop
+    // 4. Fallback: lấy từ current post trong loop - SECURITY FIXED
     else {
-        $current_product = wc_get_product(get_the_ID());
-        if ($current_product) {
-            $product_id = $current_product->get_id();
+        $current_post_id = get_the_ID();
+        if ($current_post_id && get_post_type($current_post_id) === 'product') {
+            $current_product = wc_get_product($current_post_id);
+            if ($current_product && is_a($current_product, 'WC_Product')) {
+                $product_id = $current_product->get_id();
+            }
         }
     }
     
@@ -551,11 +554,18 @@ function woo_product_extra_info_shortcode($atts) {
         return '';
     }
     
-    // Lấy danh sách extra info groups từ settings với error handling
-    $extra_info_groups = get_option('woo_extra_info_groups', array());
+    // Lấy danh sách extra info groups từ settings với error handling - PERFORMANCE FIXED
+    $cache_key = 'woo_extra_info_groups';
+    $extra_info_groups = wp_cache_get($cache_key, 'woo_product_options');
+    
     if ($extra_info_groups === false) {
-        error_log('Woo Product Option Setup: Failed to get extra info groups from settings');
-        return '';
+        $extra_info_groups = get_option('woo_extra_info_groups', array());
+        if ($extra_info_groups === false) {
+            error_log('Woo Product Option Setup: Failed to get extra info groups from settings');
+            return '';
+        }
+        // Cache trong 2 giờ
+        wp_cache_set($cache_key, $extra_info_groups, 'woo_product_options', 7200);
     }
     
     if (empty($extra_info_groups)) {
@@ -579,10 +589,10 @@ function woo_product_extra_info_shortcode($atts) {
             continue;
         }
         
-        // Validate và sanitize value
+        // Validate và sanitize value - SECURITY FIXED
         $value = floatval($current_value);
-        if ($value < 0) {
-            error_log('Woo Product Option Setup: Invalid negative value for ' . $meta_key . ': ' . $current_value);
+        if ($value < 0 || $value > 1000) { // Giới hạn giá trị để tránh performance issues
+            error_log('Woo Product Option Setup: Invalid value for ' . $meta_key . ': ' . $current_value);
             $value = 0;
         }
         
@@ -603,8 +613,8 @@ function woo_product_extra_info_shortcode($atts) {
  * Tạo các span dựa trên value
  */
 function generate_value_spans($value) {
-    // Validate input
-    if (!is_numeric($value) || $value < 0) {
+    // Validate input - SECURITY FIXED
+    if (!is_numeric($value) || $value < 0 || $value > 1000) {
         error_log('Woo Product Option Setup: Invalid value in generate_value_spans: ' . $value);
         return '';
     }
@@ -613,10 +623,10 @@ function generate_value_spans($value) {
     $full_count = intval($value);
     $has_half = ($value - $full_count) >= 0.5;
     
-    // Giới hạn số lượng span để tránh performance issues
-    if ($full_count > 100) {
+    // Giới hạn số lượng span để tránh performance issues - SECURITY FIXED
+    if ($full_count > 50) { // Giảm từ 100 xuống 50 để tăng performance
         error_log('Woo Product Option Setup: Value too large in generate_value_spans: ' . $value);
-        $full_count = 100;
+        $full_count = 50;
     }
     
     // Thêm các span full
