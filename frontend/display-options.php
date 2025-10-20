@@ -483,79 +483,91 @@ function woo_product_option_frontend_styles() {
 add_shortcode('woo_extra_info', 'woo_product_extra_info_shortcode');
 
 function woo_product_extra_info_shortcode($atts) {
-    global $product;
-    
-    // Lấy product ID với error handling
+    // Cho phép truyền vào product_id qua shortcode (ưu tiên), hoặc tự động lấy product_id theo ngữ cảnh (single/archive)
     $product_id = null;
-    if (is_product() && $product) {
-        $product_id = $product->get_id();
-    } elseif (isset($atts['product_id'])) {
+
+    // Ưu tiên product_id được truyền vào từ shortcode
+    if (isset($atts['product_id']) && intval($atts['product_id']) > 0) {
         $product_id = intval($atts['product_id']);
     } else {
-        return '';
+        global $product;
+        // Nếu trong single product, lấy product ID từ global $product
+        if (is_object($product) && method_exists($product, 'get_id')) {
+            $product_id = $product->get_id();
+        } else {
+            // Nếu đang ở trong loop archive (ví dụ danh mục), lấy qua get_the_ID()
+            $loop_id = get_the_ID();
+            if ($loop_id) {
+                // Đảm bảo đó là product
+                if ('product' === get_post_type($loop_id)) {
+                    $product_id = $loop_id;
+                }
+            }
+        }
     }
-    
+
+    // Xử lý khi không tồn tại product_id hợp lệ
     if (!$product_id || $product_id <= 0) {
         error_log('Woo Product Option Setup: Invalid product ID in shortcode');
         return '';
     }
-    
+
     // Kiểm tra extra info có enabled không
     $extra_info_enabled = get_post_meta($product_id, '_extra_info_enabled', true);
     if ($extra_info_enabled === false) {
         error_log('Woo Product Option Setup: Failed to get extra info enabled status for product ID: ' . $product_id);
         return '';
     }
-    
+
     if ($extra_info_enabled !== 'yes') {
         return '';
     }
-    
+
     // Lấy danh sách extra info groups từ settings với error handling
     $extra_info_groups = get_option('woo_extra_info_groups', array());
     if ($extra_info_groups === false) {
         error_log('Woo Product Option Setup: Failed to get extra info groups from settings');
         return '';
     }
-    
+
     if (empty($extra_info_groups)) {
         return '';
     }
-    
+
     $output = '<div class="woo-extra-info-display">';
-    
+
     foreach ($extra_info_groups as $info) {
         $slug = $info['slug'];
         $meta_key = '_extra_info_' . $slug;
-        
+
         // Chỉ hiển thị nếu có meta key tồn tại (tức là đã tick)
         $current_value = get_post_meta($product_id, $meta_key, true);
         if ($current_value === false) {
             error_log('Woo Product Option Setup: Failed to get meta value for key: ' . $meta_key);
             continue;
         }
-        
+
         if (empty($current_value)) {
             continue;
         }
-        
+
         // Validate và sanitize value
         $value = floatval($current_value);
         if ($value < 0) {
             error_log('Woo Product Option Setup: Invalid negative value for ' . $meta_key . ': ' . $current_value);
             $value = 0;
         }
-        
+
         $spans = generate_value_spans($value);
-        
+
         $output .= '<div class="extra-info-item">';
         $output .= '<span class="info-label">' . esc_html($info['name']) . ':</span>';
         $output .= '<span class="info-value">' . $spans . '</span>';
         $output .= '</div>';
     }
-    
+
     $output .= '</div>';
-    
+
     return $output;
 }
 
