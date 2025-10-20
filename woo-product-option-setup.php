@@ -121,11 +121,11 @@ class Woo_Product_Option_Setup {
         add_action('wp_ajax_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         add_action('wp_ajax_nopriv_woo_add_to_cart_with_options', array($this, 'ajax_add_to_cart_with_options'));
         
-        // Elementor compatibility
-        if (did_action('elementor/loaded')) {
-            add_action('elementor/frontend/after_enqueue_styles', array($this, 'elementor_enqueue_styles'));
-            add_action('elementor/editor/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
-        }
+        // Elementor compatibility - đăng ký muộn hơn để đảm bảo Elementor đã load
+        add_action('elementor/loaded', array($this, 'init_elementor_hooks'));
+        
+        // Fallback hooks cho Elementor - đảm bảo load trong mọi trường hợp
+        add_action('wp_enqueue_scripts', array($this, 'fallback_elementor_enqueue'), 20);
         
         // Admin hooks
         if (is_admin()) {
@@ -315,9 +315,29 @@ class Woo_Product_Option_Setup {
             return \Elementor\Plugin::$instance->editor->is_edit_mode() || 
                    \Elementor\Plugin::$instance->preview->is_preview_mode() ||
                    (isset($_GET['action']) && $_GET['action'] === 'elementor') ||
-                   (isset($_GET['elementor-preview']) && $_GET['elementor-preview']);
+                   (isset($_GET['elementor-preview']) && $_GET['elementor-preview']) ||
+                   (isset($_GET['post_type']) && $_GET['post_type'] === 'elementor_library') ||
+                   (isset($_GET['elementor_library_type']) && !empty($_GET['elementor_library_type'])) ||
+                   (is_admin() && isset($_GET['page']) && strpos($_GET['page'], 'elementor') !== false);
         }
         return false;
+    }
+
+    /**
+     * Khởi tạo Elementor hooks sau khi Elementor đã load
+     */
+    public function init_elementor_hooks() {
+        // Frontend hooks
+        add_action('elementor/frontend/after_enqueue_styles', array($this, 'elementor_enqueue_styles'));
+        add_action('elementor/frontend/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
+        
+        // Editor hooks
+        add_action('elementor/editor/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
+        add_action('elementor/editor/before_enqueue_styles', array($this, 'elementor_enqueue_styles'));
+        
+        // Template hooks
+        add_action('elementor/template/before_enqueue_scripts', array($this, 'elementor_enqueue_scripts'));
+        add_action('elementor/template/before_enqueue_styles', array($this, 'elementor_enqueue_styles'));
     }
 
     /**
@@ -352,6 +372,17 @@ class Woo_Product_Option_Setup {
             'priceFormat' => '%s',
             'isElementorEditor' => true // Flag để JS biết đang trong Elementor editor
         ));
+    }
+
+    /**
+     * Fallback enqueue cho Elementor - đảm bảo load trong mọi trường hợp
+     */
+    public function fallback_elementor_enqueue() {
+        // Chỉ chạy nếu đang trong Elementor context và chưa load assets
+        if ($this->is_elementor_edit_mode() && !wp_style_is('woo-product-option-frontend-css', 'enqueued')) {
+            $this->elementor_enqueue_styles();
+            $this->elementor_enqueue_scripts();
+        }
     }
 
     /**
